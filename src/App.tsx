@@ -1,58 +1,47 @@
-import React, {useEffect, useState} from 'react'
-import logo from './logo.svg'
-import './App.css'
-
+import React, { useEffect, useState } from "react";
+import logo from "./logo.svg";
+import "./App.css";
+type ResponseContent = {
+  content: string;
+  encoding: string;
+};
+type Request = chrome.devtools.network.Request & {
+  responseContent: ResponseContent;
+};
 
 function App() {
-    const [count, setCount] = useState(0)
+  const [requests, setRequests] = useState<Request[]>([]);
 
-    useEffect(() => {
-        chrome.devtools.network.onRequestFinished.addListener(
-            function (request) {
-                console.log(request)
-                // PanelWindow.document.body.appendChild(
-                //     document.createTextNode(request.request.url +
-                //         " " + request.response.headers[0]));
-                // PanelWindow.document.body.appendChild(document.createElement("br"));
-            }
-        );
-    }, [])
+  useEffect(() => {
+    function onRequestFinish(request: chrome.devtools.network.Request) {
+      let responseContent: ResponseContent = { content: "", encoding: "" };
+      request.getContent((content, encoding) => {
+        console.log("content", content);
+        responseContent = { content, encoding };
+      });
+      setRequests((requests) => [...requests, { ...request, responseContent }]);
+    }
+    chrome.devtools.network.onRequestFinished.addListener(onRequestFinish);
+    return () =>
+      chrome.devtools.network.onRequestFinished.removeListener(onRequestFinish);
+  }, [setRequests]);
 
-    return (
-        <div className="App">
-            <header className="App-header">
-                <img src={logo} className="App-logo" alt="logo"/>
-                <p>Hello Vite + React!</p>
-                <p>
-                    <button type="button" onClick={() => setCount((count) => count + 1)}>
-                        count is: {count}
-                    </button>
-                </p>
-                <p>
-                    Edit <code>App.tsx</code> and save to test HMR updates.
-                </p>
-                <p>
-                    <a
-                        className="App-link"
-                        href="https://reactjs.org"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Learn React
-                    </a>
-                    {' | '}
-                    <a
-                        className="App-link"
-                        href="https://vitejs.dev/guide/features.html"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Vite Docs
-                    </a>
-                </p>
-            </header>
-        </div>
-    )
+  console.log(requests);
+
+  return (
+    <div className="App">
+      {requests.length > 0
+        ? requests.map((request) => (
+            <div>
+              url: {request.request.url}, content:
+              {request.getContent((content, encoding) => {
+                return `content: ${content}, encoding: ${encoding}`;
+              })}{" "}
+            </div>
+          ))
+        : "No requests"}
+    </div>
+  );
 }
 
-export default App
+export default App;
