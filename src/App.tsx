@@ -31,14 +31,7 @@ function App() {
   return (
     <div className="App">
       {requests.length > 0
-        ? requests.map((request) => (
-            <div>
-              url: {request.request.url}, content:
-              {request.getContent((content, encoding) => {
-                return `content: ${content}, encoding: ${encoding}`;
-              })}{" "}
-            </div>
-          ))
+        ? requests.map((request) => <div>url: {request.request.url}</div>)
         : "No requests"}
     </div>
   );

@@ -11,11 +11,10 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "resolveJsonModule": true,
-    "isolatedModules": true,
     "noEmit": false,
     "outDir": "public"
   },
   "include": [
-    "./extEntryPoints/*"
+    "./additionalEntryPoints/*"
   ],
 }

@@ -4,9 +4,6 @@
   "description": "Provides additional filtering options for network requests and response objects. Particularly useful for graphql requests.",
   "version": "0.1",
   "devtools_page": "devtools.html",
-  "background": {
-    "service_worker": "background.js"
-  },
   "permissions": [
     "tabs"
   ]
