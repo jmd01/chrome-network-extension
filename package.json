@@ -3,16 +3,20 @@
   "license": "ISC",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && tsc --p tsconfig-additionalEntryPoints.json && vite build",
+    "build": "tsc && vite build",
+    "build2": "tsc && tsc --p tsconfig-additionalEntryPoints.json && vite build",
     "serve": "vite preview",
+    "start:tsc": "cross-env NODE_OPTIONS=--max-old-space-size=4096 yarn tsc --watch",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },
   "dependencies": {
     "@material-ui/core": "^4.11.4",
+    "@material-ui/data-grid": "4.0.0-alpha.31",
     "@material-ui/icons": "^4.11.2",
     "react": "^17.0.0",
-    "react-dom": "^17.0.0"
+    "react-dom": "^17.0.0",
+    "ts-pattern": "^3.1.7"
   },
   "devDependencies": {
     "@babel/core": "^7.14.6",
