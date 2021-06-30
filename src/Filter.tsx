@@ -7,7 +7,7 @@ const quickFilters: FilterUnion[] = [
     type: "group",
     id: "xhr",
     label: "XHR",
-    operator: "AND",
+    operator: "OR",
     filterItems: [
       {
         type: "item",
