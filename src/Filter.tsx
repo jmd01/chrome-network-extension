@@ -12,6 +12,12 @@ const quickFilters: FilterUnion[] = [
       {
         type: "item",
         columnField: "type",
+        value: "xhr",
+        operator: "eq",
+      },
+      {
+        type: "item",
+        columnField: "type",
         value: "fetch",
         operator: "eq",
       },

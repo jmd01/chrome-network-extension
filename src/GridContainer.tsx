@@ -11,63 +11,82 @@ import { Filter } from "./Filter";
 import ReactJson from "react-json-view";
 import { Grid } from "./Grid";
 
-const renderJsonCell = (params: GridCellParams) => {
-  return match(params.value)
-    .with(__.string, (value) => {
-      try {
-        const jsonValue = JSON.parse(value);
-        return <ReactJson src={jsonValue} />;
-      } catch {
-        return params.value;
-      }
-    })
-    .with(__.number, (value) => value)
-    .with(undefined, () => "")
-    .otherwise(() => {
-      return params.value && params.value instanceof Object ? (
-        <ReactJson src={params.value} />
-      ) : (
-        ""
-      );
-    });
+export type GridContainerProps = {
+  requests: NetworkRequest[];
+  setRequests: (value: NetworkRequest[]) => void;
 };
 
-const staticColumns: GridColDef[] = [
-  { field: "id", headerName: "ID", width: 90 },
-  {
-    field: "name",
-    headerName: "Name",
-    width: 150,
-  },
-  {
-    field: "postData",
-    headerName: "PostData",
-    width: 400,
-    flex: 1,
-    renderCell: renderJsonCell,
-    cellClassName: "json-cell",
-  },
-  {
-    field: "status",
-    headerName: "Status",
-    width: 120,
-    type: "number",
-  },
-  {
-    field: "type",
-    headerName: "Type",
-    width: 120,
-  },
-  {
-    field: "size",
-    headerName: "Size",
-    width: 120,
-  },
-];
+export const GridContainer = ({
+  requests,
+  setRequests,
+}: GridContainerProps) => {
+  const [selectedRow, setSelectedRow] = useState<number | string>();
 
-export type GridContainerProps = { requests: NetworkRequest[] };
+  const renderJsonCell = (params: GridCellParams) => {
+    return params.id === selectedRow
+      ? match(params.value)
+          .with(__.string, (value) => {
+            try {
+              const jsonValue = JSON.parse(value);
+              return <ReactJson src={jsonValue} />;
+            } catch {
+              return params.value;
+            }
+          })
+          .with(__.number, (value) => value)
+          .with(undefined, () => "")
+          .otherwise(() => {
+            return params.value && params.value instanceof Object ? (
+              <ReactJson src={params.value} />
+            ) : (
+              ""
+            );
+          })
+      : params.value
+      ? params.value.toString()
+      : "";
+  };
 
-export const GridContainer = ({ requests }: GridContainerProps) => {
+  const staticColumns: GridColDef[] = [
+    { field: "id", headerName: "ID", width: 90 },
+    {
+      field: "name",
+      headerName: "Name",
+      width: 150,
+    },
+    {
+      field: "postData",
+      headerName: "PostData",
+      width: 400,
+      flex: 1,
+      renderCell: renderJsonCell,
+      cellClassName: "json-cell",
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      width: 120,
+    },
+    {
+      field: "type",
+      headerName: "Type",
+      width: 120,
+    },
+    {
+      field: "size",
+      headerName: "Size",
+      width: 120,
+    },
+    {
+      field: "response",
+      headerName: "Response",
+      width: 400,
+      flex: 1,
+      renderCell: renderJsonCell,
+      cellClassName: "json-cell",
+    },
+  ];
+
   const [filteredRows, setFilteredRows] = useState<GridRowData[]>([]);
   const [filters, setFilters] = useState<FilterUnion[]>([]);
   const [rootGroupOperator, setRootGroupOperator] =
@@ -118,13 +137,16 @@ export const GridContainer = ({ requests }: GridContainerProps) => {
         ? [...acc, col, ...postDataCols]
         : [...acc, col];
     }, []);
-  }, [postDataCols]);
+  }, [postDataCols, selectedRow]);
 
-  console.log(filters);
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <Filter filters={filters} setFilters={setFilters} />
-      <Grid rows={filteredRows} columns={columns} />
+      <Grid
+        rows={filteredRows}
+        columns={columns}
+        setSelectedRow={setSelectedRow}
+      />
     </div>
   );
 };
@@ -200,4 +222,5 @@ const mapRequestToGridRow = (
   type: (request as any)._resourceType,
   size: request.response._transferSize,
   ...getPostDataValues(request, postDataKeys),
+  response: request.responseContent.content,
 });

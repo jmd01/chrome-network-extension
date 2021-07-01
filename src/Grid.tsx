@@ -13,16 +13,20 @@ const useStyles = makeStyles({
     "& .MuiDataGrid-root .MuiDataGrid-row.Mui-selected .json-cell": {
       maxHeight: "300px!important",
       whiteSpace: "normal",
+      overflowY: "scroll",
     },
     "& .json-cell": {
       alignItems: "flex-start",
-      overflowY: "scroll",
     },
   },
 });
-export type GridProps = { rows: GridRowData[]; columns: GridColDef[] };
+export type GridProps = {
+  rows: GridRowData[];
+  columns: GridColDef[];
+  setSelectedRow: (value: number | string | undefined) => void;
+};
 
-export const Grid = ({ rows, columns }: GridProps) => {
+export const Grid = ({ rows, columns, setSelectedRow }: GridProps) => {
   const classes = useStyles();
   return (
     <div style={{ height: "100%", width: "100%" }} className={classes.root}>
@@ -31,12 +35,7 @@ export const Grid = ({ rows, columns }: GridProps) => {
         columns={columns}
         pageSize={100}
         rowHeight={30}
-        onRowClick={(params, event) => {
-          console.log("onRowClick", params, event);
-        }}
-        onCellClick={(params, event) => {
-          console.log("onCellClick", params, event);
-        }}
+        onRowClick={(params) => setSelectedRow(params.id)}
       />
     </div>
   );
