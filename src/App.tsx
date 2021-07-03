@@ -1,9 +1,5 @@
-import { IconButton } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
-import "./App.css";
 import { GridContainer } from "./GridContainer";
-import NotInterestedIcon from "@material-ui/icons/NotInterested";
-import PauseIcon from "@material-ui/icons/Pause";
 
 type ResponseContent = {
   content: string;
@@ -62,28 +58,13 @@ function App() {
     };
   }, [setRequests, requests, isPaused]);
 
-  console.log(requests);
-
   return (
-    <div className="App">
-      <IconButton
-        aria-label="clear"
-        size={"small"}
-        color={"secondary"}
-        onClick={() => setRequests([])}
-      >
-        <NotInterestedIcon />
-      </IconButton>
-      <IconButton
-        aria-label="clear"
-        size={"small"}
-        color={isPaused ? "primary" : undefined}
-        onClick={() => setIsPaused(!isPaused)}
-      >
-        <PauseIcon />
-      </IconButton>
-      <GridContainer requests={requests} setRequests={setRequests} />
-    </div>
+    <GridContainer
+      requests={requests}
+      setRequests={setRequests}
+      isPaused={isPaused}
+      setIsPaused={setIsPaused}
+    />
   );
 }
 

@@ -7,18 +7,23 @@ import React, { useEffect, useMemo, useState } from "react";
 import { NetworkRequest } from "./App";
 import { __, match } from "ts-pattern";
 import { FilterItem, FilterUnion, GroupOperator } from "./types";
-import { Filter } from "./Filter";
 import ReactJson from "react-json-view";
 import { Grid } from "./Grid";
+import { Toolbar } from "./Toolbar";
+import { Box } from "@material-ui/core";
 
 export type GridContainerProps = {
   requests: NetworkRequest[];
   setRequests: (value: NetworkRequest[]) => void;
+  isPaused: boolean;
+  setIsPaused: (value: boolean) => void;
 };
 
 export const GridContainer = ({
   requests,
   setRequests,
+  isPaused,
+  setIsPaused,
 }: GridContainerProps) => {
   const [selectedRow, setSelectedRow] = useState<number | string>();
 
@@ -140,14 +145,27 @@ export const GridContainer = ({
   }, [postDataCols, selectedRow]);
 
   return (
-    <div style={{ height: "100%", width: "100%" }}>
-      <Filter filters={filters} setFilters={setFilters} />
+    <Box
+      display="flex"
+      flexDirection={"column"}
+      alignItems={"stretch"}
+      style={{
+        height: "100vh",
+      }}
+    >
+      <Toolbar
+        filters={filters}
+        setFilters={setFilters}
+        isPaused={isPaused}
+        setIsPaused={setIsPaused}
+        setRequests={setRequests}
+      />
       <Grid
         rows={filteredRows}
         columns={columns}
         setSelectedRow={setSelectedRow}
       />
-    </div>
+    </Box>
   );
 };
 

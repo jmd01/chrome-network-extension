@@ -4,8 +4,8 @@ import { makeStyles } from "@material-ui/styles";
 
 const useStyles = makeStyles({
   root: {
-    "& .super-app-theme--header": {
-      backgroundColor: "rgba(255, 7, 0, 0.55)",
+    "&": {
+      flex: "1 1 0",
     },
     "& .MuiDataGrid-root .MuiDataGrid-row.Mui-selected": {
       maxHeight: "300px!important",
@@ -29,7 +29,7 @@ export type GridProps = {
 export const Grid = ({ rows, columns, setSelectedRow }: GridProps) => {
   const classes = useStyles();
   return (
-    <div style={{ height: "100%", width: "100%" }} className={classes.root}>
+    <div className={classes.root}>
       <DataGrid
         rows={rows}
         columns={columns}
