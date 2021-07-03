@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { GridContainer } from "./GridContainer";
+import { GridContainer } from "./components/GridContainer";
 
 type ResponseContent = {
   content: string;

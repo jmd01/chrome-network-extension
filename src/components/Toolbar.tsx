@@ -4,7 +4,7 @@ import PauseIcon from "@material-ui/icons/Pause";
 import React from "react";
 import { Filter } from "./Filter";
 import { FilterUnion } from "./types";
-import { NetworkRequest } from "./App";
+import { NetworkRequest } from "../App";
 
 type ToolbarProps = {
   filters: FilterUnion[];

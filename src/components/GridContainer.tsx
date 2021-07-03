@@ -4,7 +4,7 @@ import {
   GridRowData,
 } from "@material-ui/data-grid";
 import React, { useEffect, useMemo, useState } from "react";
-import { NetworkRequest } from "./App";
+import { NetworkRequest } from "../App";
 import { __, match } from "ts-pattern";
 import { FilterItem, FilterUnion, GroupOperator } from "./types";
 import ReactJson from "react-json-view";
