@@ -33,7 +33,14 @@ export const GridContainer = ({
           .with(__.string, (value) => {
             try {
               const jsonValue = JSON.parse(value);
-              return <ReactJson src={jsonValue} />;
+              return (
+                <ReactJson
+                  src={jsonValue}
+                  name={null}
+                  displayDataTypes={false}
+                  displayObjectSize={false}
+                />
+              );
             } catch {
               return params.value;
             }
@@ -42,7 +49,12 @@ export const GridContainer = ({
           .with(undefined, () => "")
           .otherwise(() => {
             return params.value && params.value instanceof Object ? (
-              <ReactJson src={params.value} />
+              <ReactJson
+                src={params.value}
+                name={null}
+                displayDataTypes={false}
+                displayObjectSize={false}
+              />
             ) : (
               ""
             );

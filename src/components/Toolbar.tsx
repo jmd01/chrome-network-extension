@@ -21,8 +21,14 @@ export const Toolbar = ({
   setFilters,
 }: ToolbarProps) => {
   return (
-    <Box>
-      <Box>
+    <Box
+      display="flex"
+      alignItems={"center"}
+      style={{ gap: 8 }}
+      mb={"4px"}
+      mt={"4px"}
+    >
+      <Box style={{ borderRight: "1px solid #d8d8d8" }}>
         <IconButton
           aria-label="clear"
           size={"small"}
@@ -40,9 +46,7 @@ export const Toolbar = ({
           <PauseIcon />
         </IconButton>
       </Box>
-      <Box>
-        <Filter filters={filters} setFilters={setFilters} />
-      </Box>
+      <Filter filters={filters} setFilters={setFilters} />
     </Box>
   );
 };

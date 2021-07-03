@@ -1,4 +1,4 @@
-import { Chip } from "@material-ui/core";
+import { Box, Chip } from "@material-ui/core";
 import React from "react";
 import { FilterUnion } from "./types";
 
@@ -53,7 +53,7 @@ type FilterProps = {
 };
 export const Filter = ({ filters, setFilters }: FilterProps) => {
   return (
-    <>
+    <Box display="flex" alignContent={"center"} style={{ gap: 4 }}>
       {quickFilters.map((filter, index) => {
         const isSelected = filters.some(({ id }) => id === filter.id);
         return (
@@ -74,6 +74,6 @@ export const Filter = ({ filters, setFilters }: FilterProps) => {
           />
         );
       })}
-    </>
+    </Box>
   );
 };
