@@ -21,3 +21,8 @@ type FilterGroup = {
   filterItems: FilterItem[];
 };
 export type FilterUnion = FilterItem | FilterGroup;
+
+export interface GridColumnVisibilityChangeParams {
+  field: string;
+  isVisible: boolean;
+}

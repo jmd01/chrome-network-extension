@@ -8,10 +8,11 @@ import {
 } from "@material-ui/core";
 import NotInterestedIcon from "@material-ui/icons/NotInterested";
 import PauseIcon from "@material-ui/icons/Pause";
-import React from "react";
+import React, { useState } from "react";
 import { Filter } from "./Filter";
 import { FilterUnion } from "./types";
 import { NetworkRequest } from "../App";
+import { Settings } from "@material-ui/icons";
 
 type ToolbarProps = {
   filters: FilterUnion[];
@@ -20,6 +21,7 @@ type ToolbarProps = {
   isPaused: boolean;
   setIsPaused: (value: boolean) => void;
   setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
+  setShowSettings: React.Dispatch<React.SetStateAction<boolean>>;
 };
 export const Toolbar = ({
   setRequests,
@@ -28,9 +30,9 @@ export const Toolbar = ({
   filters,
   setFilters,
   setDarkMode,
+  setShowSettings,
 }: ToolbarProps) => {
   const theme = useTheme();
-
   const handleChange = () => {
     setDarkMode((darkMode) => !darkMode);
   };
@@ -44,6 +46,15 @@ export const Toolbar = ({
         mb={"4px"}
         mt={"4px"}
       >
+        <Box style={{ borderRight: "1px solid #d8d8d8" }} pr={"6px"}>
+          <IconButton
+            aria-label="settings"
+            size={"small"}
+            onClick={() => setShowSettings((settings) => !settings)}
+          >
+            <Settings />
+          </IconButton>
+        </Box>
         <Box style={{ borderRight: "1px solid #d8d8d8" }} pr={"6px"}>
           <IconButton
             aria-label="clear"

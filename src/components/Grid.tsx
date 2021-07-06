@@ -1,10 +1,15 @@
 import React from "react";
-import { DataGrid, GridColDef, GridRowData } from "@material-ui/data-grid";
+import {
+  DataGrid,
+  GridColDef,
+  GridRowData,
+  GridToolbar,
+} from "@material-ui/data-grid";
 import { makeStyles } from "@material-ui/styles";
 import { createStyles, Theme } from "@material-ui/core";
+import { GridColumnVisibilityChangeParams } from "./types";
 
 const useStyles = makeStyles((theme: Theme) => {
-  console.log(theme);
   return createStyles({
     root: {
       "&": {
@@ -13,6 +18,9 @@ const useStyles = makeStyles((theme: Theme) => {
       "& .MuiDataGrid-root": {
         fontSize: "12px",
       },
+      "& .MuiDataGrid-renderingZone": {
+        maxHeight: "initial!important",
+      },
       "& .MuiDataGrid-root .MuiDataGrid-columnsContainer": {
         minHeight: "30px!important",
         maxHeight: "30px!important",
@@ -20,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => {
         backgroundColor:
           theme.palette.type === "dark"
             ? theme.palette.grey["800"]
-            : theme.palette.grey["100"],
+            : theme.palette.grey["200"],
       },
       "& .MuiDataGrid-root .MuiDataGrid-columnSeparator": {
         minHeight: "30px!important",
@@ -31,9 +39,7 @@ const useStyles = makeStyles((theme: Theme) => {
       },
       "& .MuiDataGrid-root .Mui-even.MuiDataGrid-row": {
         backgroundColor:
-          theme.palette.type === "dark"
-            ? theme.palette.grey["900"]
-            : theme.palette.grey["50"],
+          theme.palette.type === "dark" ? theme.palette.grey["900"] : "#fefefe",
       },
       "& .MuiDataGrid-root .MuiDataGrid-row.Mui-selected": {
         maxHeight: "300px!important",
@@ -54,6 +60,13 @@ const useStyles = makeStyles((theme: Theme) => {
       "& .react-json-view": {
         backgroundColor: "transparent!important",
       },
+      "& .MuiSvgIcon-root": {
+        fontSize: "1rem",
+      },
+      "& .MuiDataGrid-root .MuiDataGrid-footer, & .MuiDataGrid-root .MuiTablePagination-toolbar":
+        {
+          minHeight: "36px",
+        },
     },
   });
 });
@@ -64,9 +77,19 @@ export type GridProps = {
   setSelectedRow: React.Dispatch<
     React.SetStateAction<string | number | undefined>
   >;
+  handleColumnVisibilityChange: (
+    params: GridColumnVisibilityChangeParams
+  ) => void;
+  showSettings: boolean;
 };
 
-export const Grid = ({ rows, columns, setSelectedRow }: GridProps) => {
+export const Grid = ({
+  rows,
+  columns,
+  setSelectedRow,
+  handleColumnVisibilityChange,
+  showSettings,
+}: GridProps) => {
   const classes = useStyles();
   return (
     <div className={classes.root}>
@@ -78,6 +101,14 @@ export const Grid = ({ rows, columns, setSelectedRow }: GridProps) => {
         onRowClick={(params) => {
           setSelectedRow(params.id);
         }}
+        components={
+          showSettings
+            ? {
+                Toolbar: GridToolbar,
+              }
+            : undefined
+        }
+        onColumnVisibilityChange={handleColumnVisibilityChange}
       />
     </div>
   );
