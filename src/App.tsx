@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { GridContainer } from "./components/GridContainer";
+import useMediaQuery from "@material-ui/core/useMediaQuery";
+import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
+import CssBaseline from "@material-ui/core/CssBaseline";
+import grey from "@material-ui/core/colors/grey";
+import { Theme } from "@material-ui/core";
 
 type ResponseContent = {
   content: string;
@@ -12,6 +17,27 @@ export type NetworkRequest = chrome.devtools.network.Request & {
 function App() {
   const [requests, setRequests] = useState<NetworkRequest[]>([]);
   const [isPaused, setIsPaused] = useState(false);
+  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  const [darkMode, setDarkMode] = React.useState(false);
+
+  const theme: Theme = React.useMemo(
+    () =>
+      createMuiTheme(
+        darkMode
+          ? {
+              palette: {
+                type: "dark",
+                primary: grey,
+              },
+            }
+          : { palette: { type: "light" } }
+      ),
+    [darkMode]
+  );
+
+  useEffect(() => {
+    setDarkMode(prefersDarkMode);
+  }, [prefersDarkMode]);
 
   useEffect(() => {
     // Devtools only exists within a devtools page, but need to run in a browser
@@ -59,12 +85,16 @@ function App() {
   }, [setRequests, requests, isPaused]);
 
   return (
-    <GridContainer
-      requests={requests}
-      setRequests={setRequests}
-      isPaused={isPaused}
-      setIsPaused={setIsPaused}
-    />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <GridContainer
+        requests={requests}
+        setRequests={setRequests}
+        isPaused={isPaused}
+        setIsPaused={setIsPaused}
+        setDarkMode={setDarkMode}
+      />
+    </ThemeProvider>
   );
 }
 

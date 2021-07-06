@@ -10,13 +10,14 @@ import { FilterItem, FilterUnion, GroupOperator } from "./types";
 import ReactJson from "react-json-view";
 import { Grid } from "./Grid";
 import { Toolbar } from "./Toolbar";
-import { Box } from "@material-ui/core";
+import { Box, useTheme } from "@material-ui/core";
 
 export type GridContainerProps = {
   requests: NetworkRequest[];
   setRequests: (value: NetworkRequest[]) => void;
   isPaused: boolean;
   setIsPaused: (value: boolean) => void;
+  setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export const GridContainer = ({
@@ -24,8 +25,10 @@ export const GridContainer = ({
   setRequests,
   isPaused,
   setIsPaused,
+  setDarkMode,
 }: GridContainerProps) => {
   const [selectedRow, setSelectedRow] = useState<number | string>();
+  const theme = useTheme();
 
   const renderJsonCell = (params: GridCellParams) => {
     return params.id === selectedRow
@@ -39,6 +42,11 @@ export const GridContainer = ({
                   name={null}
                   displayDataTypes={false}
                   displayObjectSize={false}
+                  theme={
+                    theme.palette.type === "light"
+                      ? "rjv-default"
+                      : "summerfruit"
+                  }
                 />
               );
             } catch {
@@ -54,14 +62,18 @@ export const GridContainer = ({
                 name={null}
                 displayDataTypes={false}
                 displayObjectSize={false}
+                theme={
+                  theme.palette.type === "light" ? "rjv-default" : "summerfruit"
+                }
               />
             ) : (
               ""
             );
           })
-      : params.value
-      ? params.value.toString()
-      : "";
+      : match(params.value)
+          .with(__.string, __.number, (value) => value)
+          .with(undefined, () => "")
+          .otherwise(() => JSON.stringify(params.value));
   };
 
   const staticColumns: GridColDef[] = [
@@ -138,6 +150,7 @@ export const GridContainer = ({
         width: 150,
         hide: true,
         renderCell: renderJsonCell,
+        cellClassName: "json-cell",
       })),
     [postDataKeys]
   );
@@ -171,6 +184,7 @@ export const GridContainer = ({
         isPaused={isPaused}
         setIsPaused={setIsPaused}
         setRequests={setRequests}
+        setDarkMode={setDarkMode}
       />
       <Grid
         rows={filteredRows}
@@ -247,10 +261,14 @@ const mapRequestToGridRow = (
 ): GridRowData => ({
   id: index,
   name: /[^/]*$/.exec(request.request.url)?.[0] ?? request.request.url,
-  postData: request.request.postData?.text,
+  postData: request.request.postData?.text
+    ? request.request.postData?.text.replace(/\\n/g, "")
+    : "",
   status: request.response.status,
   type: (request as any)._resourceType,
   size: request.response._transferSize,
   ...getPostDataValues(request, postDataKeys),
-  response: request.responseContent.content,
+  response: request.responseContent.content
+    ? request.responseContent.content.replace(/\\n/g, "")
+    : "",
 });
