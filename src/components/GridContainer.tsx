@@ -34,7 +34,14 @@ const useStyles = makeStyles({
 
 const SmallIconButton = ({ onClick }: { onClick: () => void }) => {
   return (
-    <IconButton aria-label="view" size={"small"} onClick={onClick}>
+    <IconButton
+      aria-label="view"
+      size={"small"}
+      onClick={() => {
+        console.log("onClick");
+        onClick();
+      }}
+    >
       <Visibility />
     </IconButton>
   );
@@ -164,8 +171,7 @@ export const GridContainer = ({
   const [columns, setColumns] = useState<GridColDef[]>([]);
   const [filteredRows, setFilteredRows] = useState<GridRowData[]>([]);
   const [filters, setFilters] = useState<FilterUnion[]>([]);
-  const [rootGroupOperator] =
-    useState<GroupOperator>("OR");
+  const [rootGroupOperator] = useState<GroupOperator>("OR");
 
   const postDataKeys = useMemo(() => {
     return requests.reduce<Set<string>>((acc, request) => {
@@ -274,13 +280,11 @@ export const GridContainer = ({
         handleColumnVisibilityChange={handleColumnVisibilityChange}
         showSettings={showSettings}
       />
-      {viewRowId !== undefined && (
-        <ViewRequest
-          requests={requests}
-          viewRowId={viewRowId}
-          setViewRowId={setViewRowId}
-        />
-      )}
+      <ViewRequest
+        requests={requests}
+        viewRowId={viewRowId}
+        setViewRowId={setViewRowId}
+      />
     </Box>
   );
 };
