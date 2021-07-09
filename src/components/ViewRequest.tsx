@@ -1,13 +1,8 @@
-import { createStyles, Paper, Theme } from "@material-ui/core";
+import { Box, createStyles, IconButton, Theme } from "@material-ui/core";
 import { NetworkRequest } from "../App";
-import React, { useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { makeStyles } from "@material-ui/styles";
-import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
 import Slide from "@material-ui/core/Slide";
 import { TransitionProps } from "@material-ui/core/transitions";
 import Accordion from "@material-ui/core/Accordion";
@@ -15,29 +10,70 @@ import AccordionSummary from "@material-ui/core/AccordionSummary";
 import AccordionDetails from "@material-ui/core/AccordionDetails";
 import Typography from "@material-ui/core/Typography";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-
-// const useStyles = makeStyles((theme: Theme) => {
-//   return createStyles({
-//     root: {
-//       "&": {
-//         zIndex: 1,
-//         height: "90%",
-//         width: "90%",
-//         position: "absolute",
-//         margin: "5%",
-//       },
-//     },
-//   });
-// });
+import { ReactJsonView } from "./GridContainer/GridContainer";
+import { ChevronLeft, ChevronRight } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       width: "100%",
+      "& .MuiAccordionDetails-root": {
+        flexDirection: "column",
+        padding: "0 16px 4px 16px",
+      },
+
+      "& .MuiAccordion-root": {
+        color:
+          theme.palette.type === "light"
+            ? theme.palette.grey["700"]
+            : theme.palette.grey["300"],
+        borderBottom: `1px solid ${theme.palette.grey["300"]}`,
+      },
+      "& .MuiAccordion-root.Mui-expanded": {
+        margin: 0,
+      },
+      "& .MuiAccordionSummary-content.Mui-expanded": {
+        margin: 0,
+      },
+      "& .MuiAccordionSummary-root.Mui-expanded": {
+        minHeight: 0,
+      },
+      "& .MuiPaper-elevation1": {
+        boxShadow: "none",
+      },
+      "& .nav-box": {
+        width: "30px",
+        background:
+          theme.palette.type === "light"
+            ? theme.palette.grey["100"]
+            : theme.palette.grey["700"],
+      },
+      "& .nav-box:hover": {
+        background:
+          theme.palette.type === "light"
+            ? theme.palette.grey["200"]
+            : theme.palette.grey["600"],
+        cursor: "pointer",
+      },
     },
     heading: {
       fontSize: theme.typography.pxToRem(15),
       fontWeight: theme.typography.fontWeightRegular,
+    },
+    requestTitle: {
+      fontSize: 12,
+      fontWeight: "bold",
+      color:
+        theme.palette.type === "light"
+          ? theme.palette.grey["900"]
+          : theme.palette.grey["100"],
+    },
+    requestDescription: {
+      fontSize: 12,
+      color:
+        theme.palette.type === "light"
+          ? theme.palette.grey["700"]
+          : theme.palette.grey["100"],
     },
   })
 );
@@ -62,8 +98,39 @@ export const ViewRequest = ({
     }
   }, [requests, viewRowId]);
 
-  console.log(requests, viewRowId, setViewRowId, request);
+  const onRightClick = useCallback(
+    () =>
+      typeof viewRowId === "number" &&
+      viewRowId < requests.length - 1 &&
+      setViewRowId(viewRowId + 1),
+    [viewRowId, setViewRowId]
+  );
+  const onLeftClick = useCallback(
+    () =>
+      viewRowId && typeof viewRowId === "number" && setViewRowId(viewRowId - 1),
+    [requests, viewRowId]
+  );
+
+  useEffect(() => {
+    const handleArrowKeyPress = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft") {
+        onLeftClick();
+      }
+      if (e.key === "ArrowRight") {
+        onRightClick();
+      }
+    };
+
+    window.addEventListener("keydown", handleArrowKeyPress);
+
+    return () => {
+      window.removeEventListener("keydown", handleArrowKeyPress);
+    };
+  }, [onLeftClick, onRightClick]);
+
   const classes = useStyles();
+
+  // console.log(viewRowId, request);
 
   return (
     <Dialog
@@ -75,53 +142,167 @@ export const ViewRequest = ({
       aria-describedby="alert-dialog-slide-description"
       maxWidth={"xl"}
     >
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
-          <Typography className={classes.heading}>General</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-            malesuada lacus ex, sit amet blandit leo lobortis eget.
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel2a-content"
-          id="panel2a-header"
-        >
-          <Typography className={classes.heading}>Response Headers</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-            malesuada lacus ex, sit amet blandit leo lobortis eget.
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel3a-content"
-          id="panel3a-header"
-        >
-          <Typography className={classes.heading}>Request Headers</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Typography>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse
-            malesuada lacus ex, sit amet blandit leo lobortis eget.
-          </Typography>
-        </AccordionDetails>
-      </Accordion>
+      {request && (
+        <div className={classes.root}>
+          <Box display={"flex"}>
+            <Box className={"nav-box"} onClick={onLeftClick}>
+              <IconButton
+                aria-label="clear"
+                size={"small"}
+                disabled={!viewRowId}
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  top: "50%",
+                }}
+              >
+                <ChevronLeft />
+              </IconButton>
+            </Box>
+            <Box>
+              <Accordion defaultExpanded>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel1a-content"
+                  id="panel1a-header"
+                >
+                  <Typography className={classes.heading}>
+                    General (ID: {viewRowId})
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Row
+                    title={"Request URL"}
+                    description={request.request.url}
+                  />
+                  <Row
+                    title={"Request Method"}
+                    description={request.request.method}
+                  />
+                  <Row
+                    title={"Status Code"}
+                    description={request.response.status}
+                  />
+                  <Row
+                    title={"Remote Address"}
+                    description={request.serverIPAddress}
+                  />
+                </AccordionDetails>
+              </Accordion>
+              <Accordion defaultExpanded>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel2a-content"
+                  id="panel2a-header"
+                >
+                  <Typography className={classes.heading}>
+                    Response Headers
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {request.response.headers.map(({ name, value }, index) => (
+                    <Row key={index} title={name} description={value} />
+                  ))}
+                </AccordionDetails>
+              </Accordion>
+              <Accordion defaultExpanded>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel3a-content"
+                  id="panel3a-header"
+                >
+                  <Typography className={classes.heading}>
+                    Request Headers
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {request.request.headers.map(({ name, value }, index) => (
+                    <Row key={index} title={name} description={value} />
+                  ))}
+                </AccordionDetails>
+              </Accordion>
+              <Accordion defaultExpanded>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel3a-content"
+                  id="panel3a-header"
+                >
+                  <Typography className={classes.heading}>
+                    Request Payload
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <ResponseContent content={request.responseContent.content} />
+                </AccordionDetails>
+              </Accordion>
+            </Box>
+            <Box className={"nav-box"} onClick={onRightClick}>
+              <IconButton
+                aria-label="clear"
+                size={"small"}
+                disabled={
+                  typeof viewRowId !== "number" ||
+                  viewRowId >= requests.length - 1
+                }
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "50%",
+                }}
+              >
+                <ChevronRight />
+              </IconButton>
+            </Box>
+          </Box>
+        </div>
+      )}
     </Dialog>
   );
+};
+
+type RowProps = {
+  title: string;
+  description: string | number | undefined;
+};
+const Row = ({ title, description }: RowProps) => {
+  const classes = useStyles();
+
+  return (
+    <Box
+      display={"flex"}
+      alignContent={"center"}
+      style={{ gap: 4 }}
+      paddingBottom={"4px"}
+    >
+      <Typography className={classes.requestTitle}>{title}:</Typography>
+      <Typography className={classes.requestDescription}>
+        {description}
+      </Typography>
+    </Box>
+  );
+};
+
+type ResponseContentProps = {
+  content: string;
+};
+
+const ResponseContent = ({ content }: ResponseContentProps) => {
+  const classes = useStyles();
+
+  try {
+    const jsonValue = JSON.parse(content);
+    return (
+      <Typography className={classes.requestDescription}>
+        <ReactJsonView value={jsonValue} />
+      </Typography>
+    );
+  } catch {
+    return (
+      <Typography className={classes.requestDescription}>
+        {content ? content : "No response"}
+      </Typography>
+    );
+  }
 };
 
 const Transition = React.forwardRef(function Transition(
@@ -130,23 +311,3 @@ const Transition = React.forwardRef(function Transition(
 ) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
-
-export const AlertDialogSlide = () => {
-  const [open, setOpen] = React.useState(false);
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  return (
-    <div>
-      <Button variant="outlined" color="primary" onClick={handleClickOpen}>
-        Slide in alert dialog
-      </Button>
-    </div>
-  );
-};

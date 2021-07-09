@@ -3,16 +3,15 @@ import {
   FormControlLabel,
   IconButton,
   Switch,
-  Typography,
   useTheme,
 } from "@material-ui/core";
 import NotInterestedIcon from "@material-ui/icons/NotInterested";
 import PauseIcon from "@material-ui/icons/Pause";
-import React, { useState } from "react";
+import React from "react";
 import { Filter } from "./Filter";
 import { FilterUnion } from "./types";
 import { NetworkRequest } from "../App";
-import { Settings } from "@material-ui/icons";
+import { Brightness6, Settings } from "@material-ui/icons";
 
 type ToolbarProps = {
   filters: FilterUnion[];
@@ -85,7 +84,11 @@ export const Toolbar = ({
             size={"small"}
           />
         }
-        label={<Typography variant="body2">Dark</Typography>}
+        label={
+          <IconButton aria-label="settings" size={"small"}>
+            <Brightness6 />
+          </IconButton>
+        }
       />
     </Box>
   );

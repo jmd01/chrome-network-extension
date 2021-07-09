@@ -16,5 +16,6 @@
     "jsx": "react"
   },
   "include": ["./src"],
-  "exclude": ["./src/components/mockData.ts", "./src/*.stories.tsx"]
+  "exclude": [
+    "./src/components/GridContainer/mockData.ts", "./src/*.stories.tsx"]
 }

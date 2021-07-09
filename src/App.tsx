@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { GridContainer } from "./components/GridContainer";
+import { GridContainer } from "./components/GridContainer/GridContainer";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";

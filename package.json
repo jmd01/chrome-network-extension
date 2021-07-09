@@ -3,8 +3,9 @@
   "license": "ISC",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "build2": "tsc && tsc --p tsconfig-additionalEntryPoints.json && vite build",
+    "build": "tsc && tsc --p tsconfig-additionalEntryPoints.json && vite build",
+    "build:app": "tsc && vite build",
+    "build:public": "tsc --p tsconfig-additionalEntryPoints.json && vite build",
     "serve": "vite preview",
     "start:tsc": "cross-env NODE_OPTIONS=--max-old-space-size=4096 yarn tsc --watch",
     "storybook": "start-storybook -p 6006",

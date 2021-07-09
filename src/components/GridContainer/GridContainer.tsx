@@ -1,24 +1,24 @@
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   GridCellParams,
   GridColDef,
   GridRowData,
 } from "@material-ui/data-grid";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { NetworkRequest } from "../App";
+import { NetworkRequest } from "../../App";
 import { __, match } from "ts-pattern";
 import {
-  FilterItem,
   FilterUnion,
   GridColumnVisibilityChangeParams,
   GroupOperator,
-} from "./types";
+} from "../types";
 import ReactJson from "react-json-view";
-import { Grid } from "./Grid";
-import { Toolbar } from "./Toolbar";
+import { Grid } from "../Grid";
+import { Toolbar } from "../Toolbar";
 import { Box, IconButton, useTheme } from "@material-ui/core";
-import { ViewRequest } from "./ViewRequest";
+import { ViewRequest } from "../ViewRequest";
 import { Visibility } from "@material-ui/icons";
 import { makeStyles } from "@material-ui/styles";
+import { getFilteredRows, mapRequestToGridRow } from "./utils";
 
 const useStyles = makeStyles({
   root: {
@@ -31,21 +31,6 @@ const useStyles = makeStyles({
     },
   },
 });
-
-const SmallIconButton = ({ onClick }: { onClick: () => void }) => {
-  return (
-    <IconButton
-      aria-label="view"
-      size={"small"}
-      onClick={() => {
-        console.log("onClick");
-        onClick();
-      }}
-    >
-      <Visibility />
-    </IconButton>
-  );
-};
 
 export type GridContainerProps = {
   requests: NetworkRequest[];
@@ -65,7 +50,6 @@ export const GridContainer = ({
   const [showSettings, setShowSettings] = useState(false);
   const [selectedRow, setSelectedRow] = useState<number | string>();
   const [viewRowId, setViewRowId] = useState<number | string>();
-  const theme = useTheme();
 
   const renderViewCell = (params: GridCellParams) => {
     const onClick = () => {
@@ -81,19 +65,7 @@ export const GridContainer = ({
           .with(__.string, (value) => {
             try {
               const jsonValue = JSON.parse(value);
-              return (
-                <ReactJson
-                  src={jsonValue}
-                  name={null}
-                  displayDataTypes={false}
-                  displayObjectSize={false}
-                  theme={
-                    theme.palette.type === "light"
-                      ? "rjv-default"
-                      : "summerfruit"
-                  }
-                />
-              );
+              return <ReactJsonView value={jsonValue} />;
             } catch {
               return params.value;
             }
@@ -102,15 +74,7 @@ export const GridContainer = ({
           .with(undefined, () => "")
           .otherwise(() => {
             return params.value && params.value instanceof Object ? (
-              <ReactJson
-                src={params.value}
-                name={null}
-                displayDataTypes={false}
-                displayObjectSize={false}
-                theme={
-                  theme.palette.type === "light" ? "rjv-default" : "summerfruit"
-                }
-              />
+              <ReactJsonView value={params.value} />
             ) : (
               ""
             );
@@ -122,7 +86,7 @@ export const GridContainer = ({
   };
 
   const staticColumns: GridColDef[] = [
-    { field: "id", headerName: "ID", width: 90, type: "number" },
+    { field: "id", headerName: "ID", width: 50, type: "number" },
     {
       field: "view",
       headerName: "View",
@@ -146,17 +110,17 @@ export const GridContainer = ({
     {
       field: "status",
       headerName: "Status",
-      width: 120,
+      width: 90,
     },
     {
       field: "type",
       headerName: "Type",
-      width: 120,
+      width: 80,
     },
     {
       field: "size",
       headerName: "Size",
-      width: 120,
+      width: 80,
     },
     {
       field: "response",
@@ -276,6 +240,7 @@ export const GridContainer = ({
       <Grid
         rows={filteredRows}
         columns={columns}
+        selectedRow={selectedRow}
         setSelectedRow={setSelectedRow}
         handleColumnVisibilityChange={handleColumnVisibilityChange}
         showSettings={showSettings}
@@ -289,80 +254,33 @@ export const GridContainer = ({
   );
 };
 
-const getPostDataValues = (
-  request: NetworkRequest,
-  postDataKeys: Set<string>
-): Record<string, any> => {
-  return [...postDataKeys].reduce((acc, key) => {
-    if (request.request.postData?.text) {
-      const parsedPostData = JSON.parse(request.request.postData.text);
-      if (key in parsedPostData) {
-        acc = {
-          ...acc,
-          [key]: parsedPostData[key],
-        };
-      }
-    }
-    return acc;
-  }, {});
+type ReactJsonViewProps = {
+  value: object;
 };
-
-const getFilteredRows = (
-  rows: GridRowData[],
-  filters: FilterUnion[],
-  groupOperator: GroupOperator
-) => {
-  return rows.filter((row) => evaluateFilters(row, filters, groupOperator));
-};
-
-const evaluateFilters = (
-  row: GridRowData,
-  filters: FilterUnion[],
-  groupOperator: GroupOperator
-): boolean => {
-  return filters.some((filter) =>
-    match(filter)
-      .with({ type: "item" }, (filterItem) => {
-        return groupOperator === "AND"
-          ? !evaluateFilter(row, filterItem)
-          : evaluateFilter(row, filterItem);
-      })
-      .with({ type: "group" }, ({ filterItems, operator }) =>
-        evaluateFilters(row, filterItems, operator)
-      )
-      .exhaustive()
+export const ReactJsonView = ({ value }: ReactJsonViewProps) => {
+  const theme = useTheme();
+  return (
+    <ReactJson
+      src={value}
+      name={null}
+      displayDataTypes={false}
+      displayObjectSize={false}
+      quotesOnKeys={false}
+      theme={theme.palette.type === "light" ? "rjv-default" : "summerfruit"}
+    />
   );
 };
 
-const evaluateFilter = (row: GridRowData, filterItem: FilterItem): boolean => {
-  if (filterItem.columnField in row) {
-    return match(filterItem.operator)
-      .with("eq", () => {
-        return row[filterItem.columnField] === filterItem.value;
-      })
-      .with("notEq", () => {
-        return row[filterItem.columnField] !== filterItem.value;
-      })
-      .otherwise(() => false);
-  }
-  return false;
+const SmallIconButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <IconButton
+      aria-label="view"
+      size={"small"}
+      onClick={() => {
+        onClick();
+      }}
+    >
+      <Visibility />
+    </IconButton>
+  );
 };
-
-const mapRequestToGridRow = (
-  request: NetworkRequest,
-  index: number,
-  postDataKeys: Set<string>
-): GridRowData => ({
-  id: index,
-  name: /[^/]*$/.exec(request.request.url)?.[0] ?? request.request.url,
-  postData: request.request.postData?.text
-    ? request.request.postData?.text.replace(/\\n/g, "")
-    : "",
-  status: request.response.status,
-  type: (request as any)._resourceType,
-  size: request.response._transferSize,
-  ...getPostDataValues(request, postDataKeys),
-  response: request.responseContent.content
-    ? request.responseContent.content.replace(/\\n/g, "")
-    : "",
-});
