@@ -45,7 +45,7 @@ export const Toolbar = ({
         mb={"4px"}
         mt={"4px"}
       >
-        <Box style={{ borderRight: "1px solid #d8d8d8" }} pr={"6px"}>
+        <Box style={{ borderRight: "1px solid #d8d8d8" }} px={"6px"}>
           <IconButton
             aria-label="settings"
             size={"small"}
@@ -54,7 +54,12 @@ export const Toolbar = ({
             <Settings />
           </IconButton>
         </Box>
-        <Box style={{ borderRight: "1px solid #d8d8d8" }} pr={"6px"}>
+        <Box
+          display="flex"
+          alignContent={"center"}
+          style={{ borderRight: "1px solid #d8d8d8", gap: "6px" }}
+          pr={"6px"}
+        >
           <IconButton
             aria-label="clear"
             size={"small"}

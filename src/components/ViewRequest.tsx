@@ -12,6 +12,7 @@ import Typography from "@material-ui/core/Typography";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { ReactJsonView } from "./GridContainer/GridContainer";
 import { ChevronLeft, ChevronRight } from "@material-ui/icons";
+import { GridRowData } from "@material-ui/data-grid";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -28,6 +29,16 @@ const useStyles = makeStyles((theme: Theme) =>
             ? theme.palette.grey["700"]
             : theme.palette.grey["300"],
         borderBottom: `1px solid ${theme.palette.grey["300"]}`,
+        background:
+          theme.palette.type === "light"
+            ? theme.palette.background
+            : theme.palette.grey["800"],
+      },
+      "& .MuiAccordion-root:before": {
+        background: "none",
+      },
+      "& .MuiAccordion-rounded:last-child": {
+        borderColor: "transparent",
       },
       "& .MuiAccordion-root.Mui-expanded": {
         margin: 0,
@@ -43,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
       "& .nav-box": {
         width: "30px",
+        flexShrink: 0,
         background:
           theme.palette.type === "light"
             ? theme.palette.grey["100"]
@@ -55,10 +67,29 @@ const useStyles = makeStyles((theme: Theme) =>
             : theme.palette.grey["600"],
         cursor: "pointer",
       },
+      "& .react-json-view": {
+        whiteSpace: "normal",
+        wordBreak: "break-all",
+      },
+      "& .react-json-view .icon-container": {
+        lineHeight: "0!important",
+        verticalAlign: "middle!important",
+      },
+      "& .react-json-view .object-meta-data": {
+        position: "relative",
+      },
+      "& .react-json-view .copy-to-clipboard-container": {
+        position: "absolute",
+        zIndex: 99,
+      },
+      "& .react-json-view .object-meta-data .copy-to-clipboard-container": {
+        top: "-10px!important",
+      },
     },
     heading: {
       fontSize: theme.typography.pxToRem(15),
       fontWeight: theme.typography.fontWeightRegular,
+      "& span": {},
     },
     requestTitle: {
       fontSize: 12,
@@ -74,17 +105,22 @@ const useStyles = makeStyles((theme: Theme) =>
         theme.palette.type === "light"
           ? theme.palette.grey["700"]
           : theme.palette.grey["100"],
+      "& .react-json-view": {
+        backgroundColor: "transparent!important",
+      },
     },
   })
 );
 
 type ViewRequestProps = {
   requests: NetworkRequest[];
+  filteredRows: GridRowData[];
   viewRowId: string | number | undefined;
   setViewRowId: (value: string | number | undefined) => void;
 };
 export const ViewRequest = ({
   requests,
+  filteredRows,
   viewRowId,
   setViewRowId,
 }: ViewRequestProps) => {
@@ -98,18 +134,29 @@ export const ViewRequest = ({
     }
   }, [requests, viewRowId]);
 
-  const onRightClick = useCallback(
-    () =>
-      typeof viewRowId === "number" &&
-      viewRowId < requests.length - 1 &&
-      setViewRowId(viewRowId + 1),
-    [viewRowId, setViewRowId]
-  );
-  const onLeftClick = useCallback(
-    () =>
-      viewRowId && typeof viewRowId === "number" && setViewRowId(viewRowId - 1),
-    [requests, viewRowId]
-  );
+  const onRightClick = useCallback(() => {
+    if (typeof viewRowId === "number") {
+      const currentRowIndex = filteredRows.findIndex(
+        ({ id }) => id === viewRowId
+      );
+      const nextRowIndex = currentRowIndex > -1 ? currentRowIndex + 1 : null;
+      if (nextRowIndex && nextRowIndex < filteredRows.length) {
+        setViewRowId(filteredRows[nextRowIndex].id);
+      }
+    }
+  }, [viewRowId, setViewRowId]);
+
+  const onLeftClick = useCallback(() => {
+    if (typeof viewRowId === "number") {
+      const currentRowIndex = filteredRows.findIndex(
+        ({ id }) => id === viewRowId
+      );
+      if (currentRowIndex > 0) {
+        const prevRowIndex = currentRowIndex - 1;
+        setViewRowId(filteredRows[prevRowIndex].id);
+      }
+    }
+  }, [requests, viewRowId]);
 
   useEffect(() => {
     const handleArrowKeyPress = (e: KeyboardEvent) => {
@@ -130,8 +177,6 @@ export const ViewRequest = ({
 
   const classes = useStyles();
 
-  // console.log(viewRowId, request);
-
   return (
     <Dialog
       open={!!request}
@@ -140,7 +185,7 @@ export const ViewRequest = ({
       onClose={() => setViewRowId(undefined)}
       aria-labelledby="alert-dialog-slide-title"
       aria-describedby="alert-dialog-slide-description"
-      maxWidth={"xl"}
+      maxWidth={"md"}
     >
       {request && (
         <div className={classes.root}>
@@ -160,21 +205,17 @@ export const ViewRequest = ({
               </IconButton>
             </Box>
             <Box>
-              <Accordion defaultExpanded>
+              <Accordion>
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
                   aria-controls="panel1a-content"
                   id="panel1a-header"
                 >
                   <Typography className={classes.heading}>
-                    General (ID: {viewRowId})
+                    {request.request.url} <code>(ID: {viewRowId})</code>
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <Row
-                    title={"Request URL"}
-                    description={request.request.url}
-                  />
                   <Row
                     title={"Request Method"}
                     description={request.request.method}
@@ -192,20 +233,30 @@ export const ViewRequest = ({
               <Accordion defaultExpanded>
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
-                  aria-controls="panel2a-content"
-                  id="panel2a-header"
+                  aria-controls="panel3a-content"
+                  id="panel3a-header"
                 >
-                  <Typography className={classes.heading}>
-                    Response Headers
-                  </Typography>
+                  <Typography className={classes.heading}>Request</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  {request.response.headers.map(({ name, value }, index) => (
-                    <Row key={index} title={name} description={value} />
-                  ))}
+                  <ResponseContent
+                    content={request.request.postData?.text ?? ""}
+                  />
                 </AccordionDetails>
               </Accordion>
               <Accordion defaultExpanded>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel4a-content"
+                  id="panel4a-header"
+                >
+                  <Typography className={classes.heading}>Response</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <ResponseContent content={request.responseContent.content} />
+                </AccordionDetails>
+              </Accordion>
+              <Accordion>
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
                   aria-controls="panel3a-content"
@@ -221,18 +272,20 @@ export const ViewRequest = ({
                   ))}
                 </AccordionDetails>
               </Accordion>
-              <Accordion defaultExpanded>
+              <Accordion>
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
-                  aria-controls="panel3a-content"
-                  id="panel3a-header"
+                  aria-controls="panel2a-content"
+                  id="panel2a-header"
                 >
                   <Typography className={classes.heading}>
-                    Request Payload
+                    Response Headers
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <ResponseContent content={request.responseContent.content} />
+                  {request.response.headers.map(({ name, value }, index) => (
+                    <Row key={index} title={name} description={value} />
+                  ))}
                 </AccordionDetails>
               </Accordion>
             </Box>

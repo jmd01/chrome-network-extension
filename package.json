@@ -7,7 +7,7 @@
     "build:app": "tsc && vite build",
     "build:public": "tsc --p tsconfig-additionalEntryPoints.json && vite build",
     "serve": "vite preview",
-    "start:tsc": "cross-env NODE_OPTIONS=--max-old-space-size=4096 yarn tsc --watch",
+    "start:tsc": "tsc --watch",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook"
   },

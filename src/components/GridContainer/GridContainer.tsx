@@ -1,9 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  GridCellParams,
-  GridColDef,
-  GridRowData,
-} from "@material-ui/data-grid";
 import { NetworkRequest } from "../../App";
 import { __, match } from "ts-pattern";
 import {
@@ -17,8 +12,16 @@ import { Toolbar } from "../Toolbar";
 import { Box, IconButton, useTheme } from "@material-ui/core";
 import { ViewRequest } from "../ViewRequest";
 import { Visibility } from "@material-ui/icons";
-import { makeStyles } from "@material-ui/styles";
 import { getFilteredRows, mapRequestToGridRow } from "./utils";
+import Paper from "@material-ui/core/Paper";
+import Popper from "@material-ui/core/Popper";
+import { createStyles, makeStyles } from "@material-ui/styles";
+import {
+  GridRowData,
+  GridColDef,
+  GridCellParams,
+  isOverflown,
+} from "@material-ui/data-grid";
 
 const useStyles = makeStyles({
   root: {
@@ -48,7 +51,6 @@ export const GridContainer = ({
   setDarkMode,
 }: GridContainerProps) => {
   const [showSettings, setShowSettings] = useState(false);
-  const [selectedRow, setSelectedRow] = useState<number | string>();
   const [viewRowId, setViewRowId] = useState<number | string>();
 
   const renderViewCell = (params: GridCellParams) => {
@@ -59,31 +61,44 @@ export const GridContainer = ({
     return <SmallIconButton onClick={onClick} />;
   };
 
-  const renderJsonCell = (params: GridCellParams) => {
-    return params.id === selectedRow
-      ? match(params.value)
-          .with(__.string, (value) => {
-            try {
-              const jsonValue = JSON.parse(value);
-              return <ReactJsonView value={jsonValue} />;
-            } catch {
-              return params.value;
-            }
-          })
-          .with(__.number, (value) => value)
-          .with(undefined, () => "")
-          .otherwise(() => {
-            return params.value && params.value instanceof Object ? (
-              <ReactJsonView value={params.value} />
-            ) : (
-              ""
-            );
-          })
-      : match(params.value)
-          .with(__.string, __.number, (value) => value)
-          .with(undefined, () => "")
-          .otherwise(() => JSON.stringify(params.value));
+  const renderJsonCell = (
+    params: GridCellParams
+  ): string | number | JSX.Element => {
+    // return params.id === selectedRow
+    //   ?
+    return match(params.value)
+      .with(__.string, (value) => {
+        try {
+          const jsonValue = JSON.parse(value);
+          return <ReactJsonView value={jsonValue} />;
+        } catch {
+          return params.value ? params.value.toString() : "";
+        }
+      })
+      .with(__.number, (value) => value)
+      .with(undefined, () => "")
+      .otherwise(() => {
+        return params.value && params.value instanceof Object ? (
+          <ReactJsonView value={params.value} />
+        ) : (
+          ""
+        );
+      });
+    // : match(params.value)
+    //     .with(__.string, __.number, (value) => value)
+    //     .with(undefined, () => "")
+    //     .otherwise(() => JSON.stringify(params.value));
   };
+
+  function renderCellExpand(params: GridCellParams) {
+    return (
+      <GridCellExpand
+        value={params.value ? params.value.toString() : ""}
+        jsonCell={renderJsonCell(params)}
+        width={params.colDef.width}
+      />
+    );
+  }
 
   const staticColumns: GridColDef[] = [
     { field: "id", headerName: "ID", width: 50, type: "number" },
@@ -104,7 +119,7 @@ export const GridContainer = ({
       headerName: "PostData",
       width: 400,
       flex: 1,
-      renderCell: renderJsonCell,
+      renderCell: renderCellExpand,
       cellClassName: "json-cell",
     },
     {
@@ -127,7 +142,7 @@ export const GridContainer = ({
       headerName: "Response",
       width: 400,
       flex: 1,
-      renderCell: renderJsonCell,
+      renderCell: renderCellExpand,
       cellClassName: "json-cell",
     },
   ];
@@ -161,7 +176,7 @@ export const GridContainer = ({
           headerName: `PostData: ${key}`,
           width: 150,
           hide: col ? col.hide : true,
-          renderCell: renderJsonCell,
+          renderCell: renderCellExpand,
           cellClassName: "json-cell",
         };
       }),
@@ -195,16 +210,16 @@ export const GridContainer = ({
     }
   }, [columns, postDataCols]);
 
-  useEffect(() => {
-    setColumns((columns) =>
-      columns.reduce<GridColDef[]>((acc, col) => {
-        return col.field === "postData"
-          ? [...acc, col, ...postDataCols]
-          : [...acc, col];
-      }, [])
-    );
-  }, [selectedRow]);
-
+  // useEffect(() => {
+  //   setColumns((columns) =>
+  //     columns.reduce<GridColDef[]>((acc, col) => {
+  //       return col.field === "postData"
+  //         ? [...acc, col, ...postDataCols]
+  //         : [...acc, col];
+  //     }, [])
+  //   );
+  // }, [selectedRow]);
+  //
   const handleColumnVisibilityChange = useCallback(
     (params: GridColumnVisibilityChangeParams) => {
       setColumns(
@@ -240,13 +255,13 @@ export const GridContainer = ({
       <Grid
         rows={filteredRows}
         columns={columns}
-        selectedRow={selectedRow}
-        setSelectedRow={setSelectedRow}
         handleColumnVisibilityChange={handleColumnVisibilityChange}
         showSettings={showSettings}
+        setViewRowId={setViewRowId}
       />
       <ViewRequest
         requests={requests}
+        filteredRows={filteredRows}
         viewRowId={viewRowId}
         setViewRowId={setViewRowId}
       />
@@ -282,5 +297,121 @@ const SmallIconButton = ({ onClick }: { onClick: () => void }) => {
     >
       <Visibility />
     </IconButton>
+  );
+};
+
+interface GridCellExpandProps {
+  value: string;
+  width: number;
+  jsonCell: string | number | JSX.Element;
+}
+
+const useStyles2 = makeStyles(() =>
+  createStyles({
+    root: {
+      alignItems: "center",
+      lineHeight: "24px",
+      width: "100%",
+      height: "100%",
+      position: "relative",
+      display: "flex",
+      "& .cellValue": {
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      },
+      "& .jsonCell": {
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      },
+    },
+    popper: {
+      maxHeight: "260px",
+      whiteSpace: "normal",
+      overflowY: "scroll",
+      lineHeight: "18px",
+      minHeight: "0",
+    },
+  })
+);
+
+const GridCellExpand = function GridCellExpand(props: GridCellExpandProps) {
+  const { width, value } = props;
+  const wrapper = React.useRef<HTMLDivElement | null>(null);
+  const cellDiv = React.useRef(null);
+  const cellValue = React.useRef(null);
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const classes = useStyles2();
+  const [showFullCell, setShowFullCell] = React.useState(false);
+  const [showPopper, setShowPopper] = React.useState(false);
+
+  const handleMouseEnter = () => {
+    const isCurrentlyOverflown = isOverflown(cellValue.current!);
+    setShowPopper(isCurrentlyOverflown);
+    setAnchorEl(cellDiv.current);
+    setShowFullCell(true);
+  };
+
+  const handleMouseLeave = () => {
+    setShowFullCell(false);
+  };
+
+  React.useEffect(() => {
+    if (!showFullCell) {
+      return undefined;
+    }
+
+    function handleKeyDown(nativeEvent: KeyboardEvent) {
+      // IE11, Edge (prior to using Bink?) use 'Esc'
+      if (nativeEvent.key === "Escape" || nativeEvent.key === "Esc") {
+        setShowFullCell(false);
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [setShowFullCell, showFullCell]);
+
+  return (
+    <div
+      ref={wrapper}
+      className={classes.root}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <div
+        ref={cellDiv}
+        style={{
+          height: 1,
+          width,
+          display: "block",
+          position: "absolute",
+          top: 0,
+        }}
+      />
+      <div ref={cellValue} className="cellValue">
+        {value}
+      </div>
+      {showPopper && (
+        <Popper
+          open={showFullCell && anchorEl !== null}
+          anchorEl={anchorEl}
+          style={{ minWidth: 400, width, fontSize: "12px" }}
+          placement={"bottom-start"}
+          className={classes.popper}
+        >
+          <Paper
+            elevation={1}
+            style={{ minHeight: wrapper.current!.offsetHeight - 3 }}
+          >
+            {props.jsonCell}
+          </Paper>
+        </Popper>
+      )}
+    </div>
   );
 };
