@@ -10,9 +10,9 @@ import AccordionSummary from "@material-ui/core/AccordionSummary";
 import AccordionDetails from "@material-ui/core/AccordionDetails";
 import Typography from "@material-ui/core/Typography";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import { ReactJsonView } from "./GridContainer/GridContainer";
 import { ChevronLeft, ChevronRight } from "@material-ui/icons";
 import { GridRowData } from "@material-ui/data-grid";
+import { ReactJsonView } from "./ReactJsonViewProps";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -345,7 +345,7 @@ const ResponseContent = ({ content }: ResponseContentProps) => {
   try {
     const jsonValue = JSON.parse(content);
     return (
-      <Typography className={classes.requestDescription}>
+      <Typography component={"div"} className={classes.requestDescription}>
         <ReactJsonView value={jsonValue} />
       </Typography>
     );

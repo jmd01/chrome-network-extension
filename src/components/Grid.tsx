@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React from "react";
 import {
   DataGrid,
   GridColDef,
@@ -8,7 +8,6 @@ import {
 import { makeStyles } from "@material-ui/styles";
 import { createStyles, Theme } from "@material-ui/core";
 import { GridColumnVisibilityChangeParams } from "./types";
-import { __, match } from "ts-pattern";
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({
@@ -45,6 +44,7 @@ const useStyles = makeStyles((theme: Theme) => {
       "& .MuiDataGrid-root .MuiDataGrid-columnHeaderTitleContainer": {
         padding: "0",
       },
+
       "& .MuiDataGrid-root .MuiDataGrid-row.Mui-selected .json-cell": {
         maxHeight: "300px!important",
         whiteSpace: "normal",
@@ -80,9 +80,21 @@ const useStyles = makeStyles((theme: Theme) => {
       "& .MuiSvgIcon-root": {
         fontSize: "1rem",
       },
+      "& .MuiDataGrid-root .MuiDataGrid-footer": {
+        borderTop: `1px solid
+          ${
+            theme.palette.type === "dark"
+              ? theme.palette.grey["800"]
+              : theme.palette.grey["200"]
+          }`,
+      },
+      "& .MuiDataGrid-root .MuiTablePagination-root": {
+        fontSize: "12px",
+      },
       "& .MuiDataGrid-root .MuiDataGrid-footer, & .MuiDataGrid-root .MuiTablePagination-toolbar":
         {
-          minHeight: "36px",
+          minHeight: "29px",
+          height: "29px",
         },
     },
   });

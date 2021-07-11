@@ -4,16 +4,16 @@ import { Meta, Story } from "@storybook/react";
 import { Grid } from "../Grid";
 import { mockRequests } from "./mockData";
 import { GridContainer, GridContainerProps } from "./GridContainer";
-import { createMuiTheme, Theme, ThemeProvider } from "@material-ui/core/styles";
+import { Theme, ThemeProvider } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
-import grey from "@material-ui/core/colors/grey";
+import { useTheme } from "../../App";
 
 const FullScreen = (Story: any) => (
   <div style={{ height: "100vh" }}>{Story()}</div>
 );
 
 type ThemeArg = {
-  theme: "light" | "dark";
+  darkTheme: boolean;
 };
 
 export default {
@@ -24,24 +24,7 @@ export default {
 
 const Template: Story<GridContainerProps & ThemeArg> = (args) => {
   const { requests, ...rest } = args;
-  const theme: Theme = React.useMemo(
-    () =>
-      createMuiTheme(
-        args.theme === "light"
-          ? {
-              palette: {
-                type: "light",
-              },
-            }
-          : {
-              palette: {
-                type: "dark",
-                primary: grey,
-              },
-            }
-      ),
-    []
-  );
+  const theme: Theme = useTheme(args.darkTheme);
 
   const [liveRequests, setLiveRequests] = useState(requests);
 
@@ -63,16 +46,16 @@ const Template: Story<GridContainerProps & ThemeArg> = (args) => {
 
 export const Light = Template.bind({});
 Light.args = {
-  theme: "light",
+  darkTheme: false,
   requests: mockRequests.filter((req, index) => index > -1),
 };
 export const Dark = Template.bind({});
 Dark.args = {
-  theme: "dark",
+  darkTheme: true,
   requests: mockRequests.filter((req, index) => index > -1),
 };
 export const Live = Template.bind({});
 Live.args = {
-  theme: "light",
+  darkTheme: false,
   requests: [],
 };

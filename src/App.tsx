@@ -18,22 +18,9 @@ function App() {
   const [requests, setRequests] = useState<NetworkRequest[]>([]);
   const [isPaused, setIsPaused] = useState(false);
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  const [darkMode, setDarkMode] = React.useState(false);
+  const [darkMode, setDarkMode] = React.useState(prefersDarkMode);
 
-  const theme: Theme = React.useMemo(
-    () =>
-      createMuiTheme(
-        darkMode
-          ? {
-              palette: {
-                type: "dark",
-                primary: grey,
-              },
-            }
-          : { palette: { type: "light" } }
-      ),
-    [darkMode]
-  );
+  const theme: Theme = useTheme(darkMode);
 
   useEffect(() => {
     setDarkMode(prefersDarkMode);
@@ -99,3 +86,23 @@ function App() {
 }
 
 export default App;
+
+export const useTheme = (darkMode: boolean): Theme => {
+  return React.useMemo(
+    () =>
+      createMuiTheme({
+        typography: {
+          body2: { fontSize: 12 },
+        },
+        ...(darkMode
+          ? {
+              palette: {
+                type: "dark",
+                primary: grey,
+              },
+            }
+          : { palette: { type: "light" } }),
+      }),
+    [darkMode]
+  );
+};

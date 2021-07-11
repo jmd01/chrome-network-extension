@@ -12,6 +12,22 @@ import { Filter } from "./Filter";
 import { FilterUnion } from "./types";
 import { NetworkRequest } from "../App";
 import { Brightness6, Settings } from "@material-ui/icons";
+import { makeStyles } from "@material-ui/styles";
+
+const useStyles = makeStyles({
+  root: {
+    "&": {
+      gap: 12,
+    },
+    "& .MuiSvgIcon-root": {
+      fontSize: "1.2rem",
+    },
+    "& .MuiChip-root": {
+      fontSize: "0.75rem",
+      lineHeight: "1.53",
+    },
+  },
+});
 
 type ToolbarProps = {
   filters: FilterUnion[];
@@ -36,14 +52,16 @@ export const Toolbar = ({
     setDarkMode((darkMode) => !darkMode);
   };
 
+  const classes = useStyles();
+
   return (
     <Box display="flex" justifyContent={"space-between"}>
       <Box
         display="flex"
         alignItems={"center"}
-        style={{ gap: 12 }}
         mb={"4px"}
         mt={"4px"}
+        className={classes.root}
       >
         <Box style={{ borderRight: "1px solid #d8d8d8" }} px={"6px"}>
           <IconButton
