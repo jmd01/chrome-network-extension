@@ -12,7 +12,7 @@ import Typography from "@material-ui/core/Typography";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { ChevronLeft, ChevronRight } from "@material-ui/icons";
 import { GridRowData } from "@material-ui/data-grid";
-import { ReactJsonView } from "./ReactJsonViewProps";
+import { ReactJsonView } from "./ReactJsonView";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

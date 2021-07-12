@@ -18,7 +18,7 @@ import {
   GridRowData,
 } from "@material-ui/data-grid";
 import { GridCellExpand } from "./GridCellExpand";
-import { ReactJsonView } from "../ReactJsonViewProps";
+import { ReactJsonView } from "../ReactJsonView";
 
 function renderCellExpand(params: GridCellParams) {
   return (
