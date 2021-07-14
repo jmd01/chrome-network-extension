@@ -2,9 +2,11 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { NetworkRequest } from "../../App";
 import { __, match } from "ts-pattern";
 import {
+  FilterItem,
   FilterUnion,
   GridColumnVisibilityChangeParams,
   GroupOperator,
+  notEmpty,
 } from "../types";
 import { Grid } from "../Grid";
 import { Toolbar } from "../Toolbar";
@@ -15,10 +17,12 @@ import { getFilteredRows, mapRequestToGridRow } from "./utils";
 import {
   GridCellParams,
   GridColDef,
+  GridFilterModelParams,
   GridRowData,
 } from "@material-ui/data-grid";
 import { GridCellExpand } from "./GridCellExpand";
 import { ReactJsonView } from "../ReactJsonView";
+import { quickFilters } from "../Filter";
 
 function renderCellExpand(params: GridCellParams) {
   return (
@@ -70,7 +74,7 @@ export const GridContainer = ({
   const [columns, setColumns] = useState<GridColDef[]>([]);
   const [filteredRows, setFilteredRows] = useState<GridRowData[]>([]);
   const [filters, setFilters] = useState<FilterUnion[]>([]);
-  const [rootGroupOperator] = useState<GroupOperator>("OR");
+  const [rootGroupOperator] = useState<GroupOperator>("AND");
 
   const postDataKeys = useMemo(() => {
     return requests.reduce<Set<string>>((acc, request) => {
@@ -107,13 +111,17 @@ export const GridContainer = ({
     return requests.map((request, index) =>
       mapRequestToGridRow(request, index, postDataKeys)
     );
-  }, [requests, postDataCols]);
+  }, [requests, postDataKeys]);
 
   useEffect(() => {
-    filters.length > 0
-      ? setFilteredRows(getFilteredRows(rows, filters, rootGroupOperator))
-      : setFilteredRows(rows);
-  }, [filters, rows]);
+    if (filters.length > 0) {
+      const filteredRows = getFilteredRows(rows, filters, rootGroupOperator);
+      console.log("filteredRows useEffect", filteredRows);
+      setFilteredRows(filteredRows);
+    } else {
+      setFilteredRows(rows);
+    }
+  }, [filters, rows, rootGroupOperator]);
 
   useEffect(() => {
     const currentPostDataCols = columns.filter(
@@ -128,7 +136,7 @@ export const GridContainer = ({
         }, [])
       );
     }
-  }, [columns, postDataCols]);
+  }, [staticColumns, columns, postDataCols]);
 
   const handleColumnVisibilityChange = useCallback(
     (params: GridColumnVisibilityChangeParams) => {
@@ -141,6 +149,42 @@ export const GridContainer = ({
     [setColumns, columns]
   );
 
+  const handleFilterModelChange = useCallback(
+    (params: GridFilterModelParams) => {
+      console.log(params);
+      setFilters((filters) => {
+        const filterModelFilters = params.filterModel.items
+          .map(({ id, columnField, operatorValue, value }) => {
+            if (columnField && operatorValue && value && id) {
+              return {
+                type: "item" as const,
+                id: id.toString(),
+                columnField,
+                operator: mapOperatorValueToOperator[operatorValue],
+                value,
+              };
+            }
+          })
+          .filter(notEmpty);
+
+        const quickFilters = filters.find(({ id }) => id === "quick");
+        return [
+          ...(quickFilters ? [quickFilters] : []),
+          {
+            id: "dataGrid", // Filters set from DataGrid filter panel
+            type: "group",
+            operator: "AND",
+            filterItems: filterModelFilters,
+          },
+        ];
+      });
+    },
+    []
+  );
+
+  console.log(filters, filteredRows);
+
+  // console.log(visibleRows);
   return (
     <Box
       display="flex"
@@ -163,6 +207,7 @@ export const GridContainer = ({
         rows={filteredRows}
         columns={columns}
         handleColumnVisibilityChange={handleColumnVisibilityChange}
+        handleFilterModelChange={handleFilterModelChange}
         showSettings={showSettings}
         setViewRowId={setViewRowId}
       />
@@ -174,6 +219,19 @@ export const GridContainer = ({
       />
     </Box>
   );
+};
+
+const mapOperatorValueToOperator: Record<string, FilterItem["operator"]> = {
+  "=": "eq",
+  "!=": "notEq",
+  ">": "gt",
+  ">=": "gtEq",
+  "<": "lt",
+  "<=": "ltEq",
+  contains: "contains",
+  equals: "eq",
+  startsWith: "startsWith",
+  endsWith: "endsWith",
 };
 
 const SmallIconButton = ({ onClick }: { onClick: () => void }) => {

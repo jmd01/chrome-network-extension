@@ -27,32 +27,88 @@ export const getFilteredRows = (
 ) => {
   return rows.filter((row) => evaluateFilters(row, filters, groupOperator));
 };
+
 const evaluateFilters = (
   row: GridRowData,
   filters: FilterUnion[],
   groupOperator: GroupOperator
 ): boolean => {
-  return filters.some((filter) =>
+  const evalFn = (filter: FilterUnion) =>
     match(filter)
-      .with({ type: "item" }, (filterItem) => {
-        return groupOperator === "AND"
-          ? !evaluateFilter(row, filterItem)
-          : evaluateFilter(row, filterItem);
-      })
+      .with({ type: "item" }, (filterItem) => evaluateFilter(row, filterItem))
       .with({ type: "group" }, ({ filterItems, operator }) =>
         evaluateFilters(row, filterItems, operator)
       )
-      .exhaustive()
-  );
+      .exhaustive();
+
+  return groupOperator === "AND"
+    ? !filters.some((filter) => !evalFn(filter))
+    : filters.some(evalFn);
 };
+
 const evaluateFilter = (row: GridRowData, filterItem: FilterItem): boolean => {
   if (filterItem.columnField in row) {
     return match(filterItem.operator)
       .with("eq", () => {
-        return row[filterItem.columnField] === filterItem.value;
+        const filterValue =
+          typeof row[filterItem.columnField] === "number"
+            ? parseInt(filterItem.value)
+            : filterItem.value;
+        return row[filterItem.columnField] === filterValue;
       })
       .with("notEq", () => {
-        return row[filterItem.columnField] !== filterItem.value;
+        const filterValue =
+          typeof row[filterItem.columnField] === "number"
+            ? parseInt(filterItem.value)
+            : filterItem.value;
+        return row[filterItem.columnField] !== filterValue;
+      })
+      .with("gt", () => {
+        return (
+          row[filterItem.columnField] >
+          (typeof filterItem.value === "string"
+            ? parseInt(filterItem.value)
+            : filterItem.value)
+        );
+      })
+      .with("gtEq", () => {
+        return (
+          row[filterItem.columnField] >=
+          (typeof filterItem.value === "string"
+            ? parseInt(filterItem.value)
+            : filterItem.value)
+        );
+      })
+      .with("lt", () => {
+        return (
+          row[filterItem.columnField] <
+          (typeof filterItem.value === "string"
+            ? parseInt(filterItem.value)
+            : filterItem.value)
+        );
+      })
+      .with("ltEq", () => {
+        return (
+          row[filterItem.columnField] <=
+          (typeof filterItem.value === "string"
+            ? parseInt(filterItem.value)
+            : filterItem.value)
+        );
+      })
+      .with("contains", () => {
+        console.log(row[filterItem.columnField].includes(filterItem.value));
+        return row[filterItem.columnField].includes(filterItem.value);
+      })
+      .with("notContains", () => {
+        return !row[filterItem.columnField].includes(filterItem.value);
+      })
+      .with("startsWith", () => {
+        const regEx = new RegExp(`/^${filterItem.value}/`);
+        return regEx.test(row[filterItem.columnField]);
+      })
+      .with("endsWith", () => {
+        const regEx = new RegExp(`/${filterItem.value}$/`);
+        return row[filterItem.columnField].test(regEx);
       })
       .otherwise(() => false);
   }

@@ -1,4 +1,10 @@
-import { Box, createStyles, IconButton, Theme } from "@material-ui/core";
+import {
+  Box,
+  createStyles,
+  Divider,
+  IconButton,
+  Theme,
+} from "@material-ui/core";
 import { NetworkRequest } from "../App";
 import React, { useCallback, useEffect, useMemo } from "react";
 import { makeStyles } from "@material-ui/styles";
@@ -28,7 +34,11 @@ const useStyles = makeStyles((theme: Theme) =>
           theme.palette.type === "light"
             ? theme.palette.grey["700"]
             : theme.palette.grey["300"],
-        borderBottom: `1px solid ${theme.palette.grey["300"]}`,
+        borderBottom: `1px solid ${
+          theme.palette.type === "light"
+            ? theme.palette.grey["300"]
+            : theme.palette.grey["700"]
+        }`,
         background:
           theme.palette.type === "light"
             ? theme.palette.background
@@ -89,7 +99,10 @@ const useStyles = makeStyles((theme: Theme) =>
     heading: {
       fontSize: theme.typography.pxToRem(15),
       fontWeight: theme.typography.fontWeightRegular,
-      "& span": {},
+      color:
+        theme.palette.type === "light"
+          ? theme.palette.grey["800"]
+          : theme.palette.grey["200"],
     },
     requestTitle: {
       fontSize: 12,
@@ -144,7 +157,7 @@ export const ViewRequest = ({
         setViewRowId(filteredRows[nextRowIndex].id);
       }
     }
-  }, [viewRowId, setViewRowId]);
+  }, [viewRowId, filteredRows, setViewRowId]);
 
   const onLeftClick = useCallback(() => {
     if (typeof viewRowId === "number") {
@@ -156,7 +169,7 @@ export const ViewRequest = ({
         setViewRowId(filteredRows[prevRowIndex].id);
       }
     }
-  }, [requests, viewRowId]);
+  }, [filteredRows, setViewRowId, viewRowId]);
 
   useEffect(() => {
     const handleArrowKeyPress = (e: KeyboardEvent) => {
@@ -205,15 +218,49 @@ export const ViewRequest = ({
               </IconButton>
             </Box>
             <Box>
+              <Box padding={"16px"}>
+                <Typography className={classes.heading}>
+                  {request.request.url} <code>(ID: {viewRowId})</code>
+                </Typography>
+              </Box>
+              <Divider />
+              <Accordion defaultExpanded>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel3a-content"
+                  id="panel3a-header"
+                >
+                  <Typography className={classes.heading}>Request</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <ResponseContent
+                    content={request.request.postData?.text ?? ""}
+                    type={"request"}
+                  />
+                </AccordionDetails>
+              </Accordion>
+              <Accordion defaultExpanded>
+                <AccordionSummary
+                  expandIcon={<ExpandMoreIcon />}
+                  aria-controls="panel4a-content"
+                  id="panel4a-header"
+                >
+                  <Typography className={classes.heading}>Response</Typography>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <ResponseContent
+                    content={request.responseContent.content}
+                    type={"response"}
+                  />
+                </AccordionDetails>
+              </Accordion>
               <Accordion>
                 <AccordionSummary
                   expandIcon={<ExpandMoreIcon />}
                   aria-controls="panel1a-content"
                   id="panel1a-header"
                 >
-                  <Typography className={classes.heading}>
-                    {request.request.url} <code>(ID: {viewRowId})</code>
-                  </Typography>
+                  <Typography className={classes.heading}>General</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   <Row
@@ -228,32 +275,6 @@ export const ViewRequest = ({
                     title={"Remote Address"}
                     description={request.serverIPAddress}
                   />
-                </AccordionDetails>
-              </Accordion>
-              <Accordion defaultExpanded>
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  aria-controls="panel3a-content"
-                  id="panel3a-header"
-                >
-                  <Typography className={classes.heading}>Request</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <ResponseContent
-                    content={request.request.postData?.text ?? ""}
-                  />
-                </AccordionDetails>
-              </Accordion>
-              <Accordion defaultExpanded>
-                <AccordionSummary
-                  expandIcon={<ExpandMoreIcon />}
-                  aria-controls="panel4a-content"
-                  id="panel4a-header"
-                >
-                  <Typography className={classes.heading}>Response</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <ResponseContent content={request.responseContent.content} />
                 </AccordionDetails>
               </Accordion>
               <Accordion>
@@ -337,9 +358,10 @@ const Row = ({ title, description }: RowProps) => {
 
 type ResponseContentProps = {
   content: string;
+  type: "request" | "response";
 };
 
-const ResponseContent = ({ content }: ResponseContentProps) => {
+const ResponseContent = ({ content, type }: ResponseContentProps) => {
   const classes = useStyles();
 
   try {
@@ -352,14 +374,14 @@ const ResponseContent = ({ content }: ResponseContentProps) => {
   } catch {
     return (
       <Typography className={classes.requestDescription}>
-        {content ? content : "No response"}
+        {content ? content : `No ${type} content`}
       </Typography>
     );
   }
 };
 
 const Transition = React.forwardRef(function Transition(
-  props: TransitionProps & { children?: React.ReactElement<any, any> },
+  props: TransitionProps & { children?: React.ReactElement },
   ref: React.Ref<unknown>
 ) {
   return <Slide direction="up" ref={ref} {...props} />;

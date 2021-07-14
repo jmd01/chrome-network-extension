@@ -2,6 +2,7 @@ import React from "react";
 import {
   DataGrid,
   GridColDef,
+  GridFilterModelParams,
   GridRowData,
   GridToolbar,
 } from "@material-ui/data-grid";
@@ -109,6 +110,7 @@ export type GridProps = {
   handleColumnVisibilityChange: (
     params: GridColumnVisibilityChangeParams
   ) => void;
+  handleFilterModelChange: (params: GridFilterModelParams) => void;
   showSettings: boolean;
 };
 
@@ -116,6 +118,7 @@ export const Grid = ({
   rows,
   columns,
   handleColumnVisibilityChange,
+  handleFilterModelChange,
   showSettings,
   setViewRowId,
 }: GridProps) => {
@@ -139,6 +142,7 @@ export const Grid = ({
         }
         onColumnVisibilityChange={handleColumnVisibilityChange}
         disableColumnMenu
+        onFilterModelChange={handleFilterModelChange}
       />
     </div>
   );

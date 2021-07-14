@@ -1,8 +1,8 @@
 import { Box, Chip } from "@material-ui/core";
 import React from "react";
-import { FilterUnion } from "./types";
+import { FilterGroup, FilterUnion, isFilterGroup } from "./types";
 
-const quickFilters: FilterUnion[] = [
+export const quickFilters: FilterUnion[] = [
   {
     type: "group",
     id: "xhr",
@@ -99,11 +99,28 @@ type FilterProps = {
   filters: FilterUnion[];
   setFilters: (value: FilterUnion[]) => void;
 };
+
 export const Filter = ({ filters, setFilters }: FilterProps) => {
+  const quickFilterGroup: FilterGroup = filters
+    .filter(isFilterGroup)
+    .find(({ id }) => id === "quick") ?? {
+    type: "group",
+    id: "quick",
+    operator: "OR",
+    filterItems: [],
+  };
+  // const quickFilterGroupItems =
+  //   quickFilterGroup && quickFilterGroup.type === "group"
+  //     ? quickFilterGroup.filterItems
+  //     : [];
+
   return (
     <Box display="flex" alignContent={"center"} style={{ gap: 4 }}>
       {quickFilters.map((filter, index) => {
-        const isSelected = filters.some(({ id }) => id === filter.id);
+        const isSelected = quickFilterGroup.filterItems.some(
+          ({ id }) => id === filter.id
+        );
+
         return (
           <Chip
             key={index}
@@ -113,11 +130,20 @@ export const Filter = ({ filters, setFilters }: FilterProps) => {
             color={isSelected ? "primary" : undefined}
             clickable
             onClick={() => {
-              setFilters(
-                isSelected
-                  ? filters.filter(({ id }) => id !== filter.id)
-                  : [...filters, filter]
+              const otherFilterGroups = filters.filter(
+                ({ id }) => id !== "quick"
               );
+
+              const updatedQuickFilterGroup: FilterGroup = {
+                ...quickFilterGroup,
+                filterItems: isSelected
+                  ? quickFilterGroup.filterItems.filter(
+                      ({ id }) => id !== filter.id
+                    )
+                  : [...quickFilterGroup.filterItems, filter],
+              };
+
+              setFilters([...otherFilterGroups, updatedQuickFilterGroup]);
             }}
           />
         );

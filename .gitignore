@@ -1,7 +1,12 @@
-node_modules
+.idea
 .DS_Store
+
+node_modules
+
 dist
 dist-ssr
+
 *.local
-.idea
-public/background.js
+
+test-report.xml
+*.tsbuildinfo
