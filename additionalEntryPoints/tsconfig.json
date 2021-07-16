@@ -19,7 +19,4 @@
     "outDir": "../public",
     "isolatedModules": false
   },
-//  "include": [
-//    "./"
-//  ]
 }
