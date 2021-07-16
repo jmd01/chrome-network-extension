@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ESNext",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
     "allowJs": false,
     "skipLibCheck": false,
     "esModuleInterop": false,
@@ -12,9 +16,10 @@
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "noEmit": false,
-    "outDir": "public"
+    "outDir": "../public",
+    "isolatedModules": false
   },
-  "include": [
-    "./additionalEntryPoints/*"
-  ],
+//  "include": [
+//    "./"
+//  ]
 }

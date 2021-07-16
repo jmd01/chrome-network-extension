@@ -37,7 +37,9 @@ const evaluateFilters = (
     match(filter)
       .with({ type: "item" }, (filterItem) => evaluateFilter(row, filterItem))
       .with({ type: "group" }, ({ filterItems, operator }) =>
-        evaluateFilters(row, filterItems, operator)
+        filterItems.length > 0
+          ? evaluateFilters(row, filterItems, operator)
+          : true
       )
       .exhaustive();
 

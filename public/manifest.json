@@ -1,10 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "Chrome Network Extension",
-  "description": "Provides additional filtering options for network requests and response objects. Particularly useful for graphql requests.",
-  "version": "0.1",
-  "devtools_page": "devtools.html",
-  "permissions": [
-    "tabs"
-  ]
+  "name": "Network+",
+  "description": "Provides additional filtering options for network request and response objects. Particularly useful for graphql requests.",
+  "version": "0.1.0",
+  "icons": {
+    "16": "network+_16x16.png",
+    "48": "network+_48x48.png",
+    "128": "network+_128x128.png"
+  },
+  "devtools_page": "devtools.html"
 }

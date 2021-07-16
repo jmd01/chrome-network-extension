@@ -1,1 +1,1 @@
-chrome.devtools.panels.create("Network+", "toast.png", "index.html");
+chrome.devtools.panels.create("Network+", "network+_128x128.png", "index.html");
