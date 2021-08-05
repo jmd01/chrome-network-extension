@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { NetworkRequest } from "../../App";
 import { __, match } from "ts-pattern";
 import {
   FilterItem,
   FilterUnion,
   GridColumnVisibilityChangeParams,
   GroupOperator,
+  NetworkRequest,
   notEmpty,
-} from "../types";
+  OptimisationConfig,
+} from "../../types";
 import { Grid } from "../Grid";
 import { Toolbar } from "../Toolbar";
 import { Box, IconButton } from "@material-ui/core";
@@ -22,7 +23,6 @@ import {
 } from "@material-ui/data-grid";
 import { GridCellExpand } from "./GridCellExpand";
 import { ReactJsonView } from "../ReactJsonView";
-import { quickFilters } from "../Filter";
 
 function renderCellExpand(params: GridCellParams) {
   return (
@@ -52,6 +52,8 @@ function renderCellExpand(params: GridCellParams) {
 }
 
 export type GridContainerProps = {
+  optimisationConfig: OptimisationConfig;
+  setOptimisationConfig: (value: OptimisationConfig) => void;
   requests: NetworkRequest[];
   setRequests: (value: NetworkRequest[]) => void;
   isPaused: boolean;
@@ -60,16 +62,23 @@ export type GridContainerProps = {
 };
 
 export const GridContainer = ({
+  optimisationConfig,
+  setOptimisationConfig,
   requests,
   setRequests,
   isPaused,
   setIsPaused,
   setDarkMode,
 }: GridContainerProps) => {
-  const [showSettings, setShowSettings] = useState(false);
+  const [showSettings, setShowSettings] = useState(true);
   const [viewRowId, setViewRowId] = useState<number | string>();
 
-  const staticColumns: GridColDef[] = useStaticColumns(setViewRowId);
+  console.count("GridContainer render");
+
+  const staticColumns: GridColDef[] = useStaticColumns(
+    setViewRowId,
+    optimisationConfig.showResponseColumn
+  );
 
   const [columns, setColumns] = useState<GridColDef[]>([]);
   const [filteredRows, setFilteredRows] = useState<GridRowData[]>([]);
@@ -77,34 +86,38 @@ export const GridContainer = ({
   const [rootGroupOperator] = useState<GroupOperator>("AND");
 
   const postDataKeys = useMemo(() => {
-    return requests.reduce<Set<string>>((acc, request) => {
-      if (
-        request.request.postData?.text &&
-        request.request.postData?.mimeType === "application/json"
-      ) {
-        const parsedPostData = JSON.parse(request.request.postData.text);
-        Object.keys(parsedPostData).forEach((key) => {
-          acc.add(key);
-        });
-      }
-      return acc;
-    }, new Set());
-  }, [requests]);
+    return optimisationConfig.dynamicPostDataColumns
+      ? requests.reduce<Set<string>>((acc, request) => {
+          if (
+            request.request.postData?.text &&
+            request.request.postData?.mimeType === "application/json"
+          ) {
+            const parsedPostData = JSON.parse(request.request.postData.text);
+            Object.keys(parsedPostData).forEach((key) => {
+              acc.add(key);
+            });
+          }
+          return acc;
+        }, new Set())
+      : new Set<string>();
+  }, [optimisationConfig.dynamicPostDataColumns, requests]);
 
   const postDataCols: GridColDef[] = useMemo(
     () =>
-      [...postDataKeys].map((key) => {
-        const col = columns.find((col) => col.field === key);
-        return {
-          field: key,
-          headerName: `PostData: ${key}`,
-          width: 150,
-          hide: col ? col.hide : true,
-          renderCell: renderCellExpand,
-          cellClassName: "json-cell",
-        };
-      }),
-    [postDataKeys, columns]
+      optimisationConfig.dynamicPostDataColumns
+        ? [...postDataKeys].map((key) => {
+            const col = columns.find((col) => col.field === key);
+            return {
+              field: key,
+              headerName: `PostData: ${key}`,
+              width: 150,
+              hide: col ? col.hide : true,
+              renderCell: renderCellExpand,
+              cellClassName: "json-cell",
+            };
+          })
+        : [],
+    [optimisationConfig.dynamicPostDataColumns, postDataKeys, columns]
   );
 
   const rows: GridRowData[] = useMemo(() => {
@@ -116,7 +129,6 @@ export const GridContainer = ({
   useEffect(() => {
     if (filters.length > 0) {
       const filteredRows = getFilteredRows(rows, filters, rootGroupOperator);
-      console.log("filteredRows useEffect", filteredRows);
       setFilteredRows(filteredRows);
     } else {
       setFilteredRows(rows);
@@ -124,19 +136,28 @@ export const GridContainer = ({
   }, [filters, rows, rootGroupOperator]);
 
   useEffect(() => {
-    const currentPostDataCols = columns.filter(
-      (col) => col.headerName && /^PostData:/.test(col.headerName)
-    );
-    if (postDataCols.length !== currentPostDataCols.length) {
-      setColumns(
-        staticColumns.reduce<GridColDef[]>((acc, col) => {
-          return col.field === "postData"
-            ? [...acc, col, ...postDataCols]
-            : [...acc, col];
-        }, [])
+    if (optimisationConfig.dynamicPostDataColumns) {
+      const currentPostDataCols = columns.filter(
+        (col) => col.headerName && /^PostData:/.test(col.headerName)
       );
+      if (postDataCols.length !== currentPostDataCols.length) {
+        setColumns(
+          staticColumns.reduce<GridColDef[]>((acc, col) => {
+            return col.field === "postData"
+              ? [...acc, col, ...postDataCols]
+              : [...acc, col];
+          }, [])
+        );
+      }
+    } else {
+      setColumns(staticColumns);
     }
-  }, [staticColumns, columns, postDataCols]);
+  }, [
+    optimisationConfig.dynamicPostDataColumns,
+    staticColumns,
+    columns,
+    postDataCols,
+  ]);
 
   const handleColumnVisibilityChange = useCallback(
     (params: GridColumnVisibilityChangeParams) => {
@@ -151,7 +172,6 @@ export const GridContainer = ({
 
   const handleFilterModelChange = useCallback(
     (params: GridFilterModelParams) => {
-      console.log(params);
       setFilters((filters) => {
         const filterModelFilters = params.filterModel.items
           .map(({ id, columnField, operatorValue, value }) => {
@@ -182,9 +202,6 @@ export const GridContainer = ({
     []
   );
 
-  console.log(filters, filteredRows);
-
-  // console.log(visibleRows);
   return (
     <Box
       display="flex"
@@ -202,6 +219,8 @@ export const GridContainer = ({
         setRequests={setRequests}
         setDarkMode={setDarkMode}
         setShowSettings={setShowSettings}
+        optimisationConfig={optimisationConfig}
+        setOptimisationConfig={setOptimisationConfig}
       />
       <Grid
         rows={filteredRows}
@@ -216,6 +235,7 @@ export const GridContainer = ({
         filteredRows={filteredRows}
         viewRowId={viewRowId}
         setViewRowId={setViewRowId}
+        optimisationConfig={optimisationConfig}
       />
     </Box>
   );
@@ -249,7 +269,8 @@ const SmallIconButton = ({ onClick }: { onClick: () => void }) => {
 };
 
 const useStaticColumns = (
-  setViewRowId: (value: string | number | undefined) => void
+  setViewRowId: (value: string | number | undefined) => void,
+  showResponseColumn: boolean
 ) => {
   const renderViewCell = useCallback(
     (params: GridCellParams) => {
@@ -307,8 +328,9 @@ const useStaticColumns = (
         flex: 1,
         renderCell: renderCellExpand,
         cellClassName: "json-cell",
+        hide: !showResponseColumn,
       },
     ],
-    [renderViewCell]
+    [showResponseColumn, renderViewCell]
   );
 };

@@ -1,6 +1,6 @@
 import { Box, Chip } from "@material-ui/core";
 import React from "react";
-import { FilterGroup, FilterUnion, isFilterGroup } from "./types";
+import { FilterGroup, FilterUnion, isFilterGroup } from "../types";
 
 export const quickFilters: FilterUnion[] = [
   {

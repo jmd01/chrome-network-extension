@@ -7,12 +7,15 @@ import {
 } from "@material-ui/core";
 import NotInterestedIcon from "@material-ui/icons/NotInterested";
 import PauseIcon from "@material-ui/icons/Pause";
+import TuneIcon from "@material-ui/icons/Tune";
+import SettingsIcon from "@material-ui/icons/Settings";
+import Brightness6Icon from "@material-ui/icons/Brightness6";
 import React from "react";
 import { Filter } from "./Filter";
-import { FilterUnion } from "./types";
-import { NetworkRequest } from "../App";
-import { Brightness6, Settings } from "@material-ui/icons";
+import { FilterUnion, NetworkRequest, OptimisationConfig } from "../types";
 import { makeStyles } from "@material-ui/styles";
+import Menu from "@material-ui/core/Menu";
+import MenuItem from "@material-ui/core/MenuItem";
 
 const useStyles = makeStyles({
   root: {
@@ -37,6 +40,8 @@ type ToolbarProps = {
   setIsPaused: (value: boolean) => void;
   setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
   setShowSettings: React.Dispatch<React.SetStateAction<boolean>>;
+  optimisationConfig: OptimisationConfig;
+  setOptimisationConfig: (value: OptimisationConfig) => void;
 };
 export const Toolbar = ({
   setRequests,
@@ -46,6 +51,8 @@ export const Toolbar = ({
   setFilters,
   setDarkMode,
   setShowSettings,
+  optimisationConfig,
+  setOptimisationConfig,
 }: ToolbarProps) => {
   const theme = useTheme();
   const handleChange = () => {
@@ -69,7 +76,7 @@ export const Toolbar = ({
             size={"small"}
             onClick={() => setShowSettings((settings) => !settings)}
           >
-            <Settings />
+            <SettingsIcon />
           </IconButton>
         </Box>
         <Box
@@ -96,6 +103,10 @@ export const Toolbar = ({
           </IconButton>
         </Box>
         <Filter filters={filters} setFilters={setFilters} />
+        <OptimisationSettings
+          optimisationConfig={optimisationConfig}
+          setOptimisationConfig={setOptimisationConfig}
+        />
       </Box>
       <FormControlLabel
         control={
@@ -109,10 +120,89 @@ export const Toolbar = ({
         }
         label={
           <IconButton aria-label="settings" size={"small"}>
-            <Brightness6 />
+            <Brightness6Icon />
           </IconButton>
         }
       />
     </Box>
+  );
+};
+
+type OptimisationSettingsProps = {
+  optimisationConfig: OptimisationConfig;
+  setOptimisationConfig: (value: OptimisationConfig) => void;
+};
+const OptimisationSettings = ({
+  optimisationConfig,
+  setOptimisationConfig,
+}: OptimisationSettingsProps) => {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  return (
+    <>
+      <IconButton
+        aria-label="clear"
+        size={"small"}
+        color={"primary"}
+        onClick={handleClick}
+      >
+        <TuneIcon />
+      </IconButton>
+      <Menu
+        id="simple-menu"
+        anchorEl={anchorEl}
+        keepMounted
+        open={!!anchorEl}
+        onClose={handleClose}
+      >
+        <MenuItem>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={optimisationConfig.dynamicPostDataColumns}
+                onChange={() =>
+                  setOptimisationConfig({
+                    ...optimisationConfig,
+                    dynamicPostDataColumns:
+                      !optimisationConfig.dynamicPostDataColumns,
+                  })
+                }
+                name="dark"
+                color="primary"
+                size={"small"}
+              />
+            }
+            label={"Split Post data into separate columns"}
+          />
+        </MenuItem>
+        <MenuItem>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={optimisationConfig.showResponseColumn}
+                onChange={() =>
+                  setOptimisationConfig({
+                    ...optimisationConfig,
+                    showResponseColumn: !optimisationConfig.showResponseColumn,
+                  })
+                }
+                name="dark"
+                color="primary"
+                size={"small"}
+              />
+            }
+            label={"Render Response column"}
+          />
+        </MenuItem>
+      </Menu>
+    </>
   );
 };

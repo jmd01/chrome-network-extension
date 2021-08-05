@@ -8,7 +8,7 @@ import {
 } from "@material-ui/data-grid";
 import { makeStyles } from "@material-ui/styles";
 import { createStyles, Theme } from "@material-ui/core";
-import { GridColumnVisibilityChangeParams } from "./types";
+import { GridColumnVisibilityChangeParams } from "../types";
 
 const useStyles = makeStyles((theme: Theme) => {
   return createStyles({

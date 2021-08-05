@@ -5,8 +5,7 @@ import {
   IconButton,
   Theme,
 } from "@material-ui/core";
-import { NetworkRequest } from "../App";
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { makeStyles } from "@material-ui/styles";
 import Dialog from "@material-ui/core/Dialog";
 import Slide from "@material-ui/core/Slide";
@@ -19,6 +18,11 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { ChevronLeft, ChevronRight } from "@material-ui/icons";
 import { GridRowData } from "@material-ui/data-grid";
 import { ReactJsonView } from "./ReactJsonView";
+import {
+  NetworkRequest,
+  OptimisationConfig,
+  ResponseContentType,
+} from "../types";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -126,17 +130,21 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 type ViewRequestProps = {
+  optimisationConfig: OptimisationConfig;
   requests: NetworkRequest[];
   filteredRows: GridRowData[];
   viewRowId: string | number | undefined;
   setViewRowId: (value: string | number | undefined) => void;
 };
 export const ViewRequest = ({
+  optimisationConfig,
   requests,
   filteredRows,
   viewRowId,
   setViewRowId,
 }: ViewRequestProps) => {
+  const [responseContent, setResponseContent] = useState<ResponseContentType>();
+
   const request = useMemo(() => {
     if (viewRowId !== undefined) {
       const requestIndex =
@@ -189,6 +197,16 @@ export const ViewRequest = ({
   }, [onLeftClick, onRightClick]);
 
   const classes = useStyles();
+
+  useEffect(() => {
+    if (request) {
+      if (optimisationConfig.showResponseColumn) {
+        setResponseContent(request.responseContent);
+      } else {
+        request.responseContentPromise.then((data) => setResponseContent(data));
+      }
+    }
+  }, [optimisationConfig.showResponseColumn, request]);
 
   return (
     <Dialog
@@ -249,7 +267,7 @@ export const ViewRequest = ({
                 </AccordionSummary>
                 <AccordionDetails>
                   <ResponseContent
-                    content={request.responseContent.content}
+                    content={responseContent?.content}
                     type={"response"}
                   />
                 </AccordionDetails>
@@ -357,7 +375,7 @@ const Row = ({ title, description }: RowProps) => {
 };
 
 type ResponseContentProps = {
-  content: string;
+  content?: string;
   type: "request" | "response";
 };
 
@@ -365,7 +383,7 @@ const ResponseContent = ({ content, type }: ResponseContentProps) => {
   const classes = useStyles();
 
   try {
-    const jsonValue = JSON.parse(content);
+    const jsonValue = JSON.parse(content ?? "");
     return (
       <Typography component={"div"} className={classes.requestDescription}>
         <ReactJsonView value={jsonValue} />

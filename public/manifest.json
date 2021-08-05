@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Network+",
   "description": "Provides additional filtering options for network request and response objects. Particularly useful for graphql requests.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "icons": {
     "16": "network+_16x16.png",
     "48": "network+_48x48.png",

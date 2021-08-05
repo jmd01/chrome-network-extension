@@ -1,4 +1,4 @@
-import { NetworkRequest } from "../../App";
+import { NetworkRequest } from "../../types";
 
 export const mockRequests: NetworkRequest[] = [
   {

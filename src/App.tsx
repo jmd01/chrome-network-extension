@@ -5,20 +5,25 @@ import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import grey from "@material-ui/core/colors/grey";
 import { Theme } from "@material-ui/core";
-
-type ResponseContent = {
-  content: string;
-  encoding: string;
-};
-export type NetworkRequest = chrome.devtools.network.Request & {
-  responseContent: ResponseContent;
-};
+import {
+  NetworkRequest,
+  OptimisationConfig,
+  ResponseContentType,
+} from "./types";
 
 function App() {
   const [requests, setRequests] = useState<NetworkRequest[]>([]);
+  // const [responses, setResponses] = useState<ResponseContent[]>([]);
   const [isPaused, setIsPaused] = useState(false);
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const [darkMode, setDarkMode] = React.useState(prefersDarkMode);
+
+  const [optimisationConfig, setOptimisationConfig] =
+    useState<OptimisationConfig>({
+      dynamicPostDataColumns: false,
+      showResponseColumn: true,
+      debounceGridRenders: 2,
+    });
 
   const theme: Theme = useTheme(darkMode);
 
@@ -39,19 +44,21 @@ function App() {
       }
 
       let index = 0;
-      request.getContent((content, encoding) => {
-        const responseContent: ResponseContent = { content, encoding };
-        setRequests((requests) =>
-          requests.map((request, i) => {
-            return i === index
-              ? {
-                  ...request,
-                  responseContent,
-                }
-              : request;
-          })
-        );
-      });
+      if (optimisationConfig.showResponseColumn) {
+        request.getContent((content, encoding) => {
+          const responseContent: ResponseContentType = { content, encoding };
+          setRequests((requests) =>
+            requests.map((request, i) => {
+              return i === index
+                ? {
+                    ...request,
+                    responseContent,
+                  }
+                : request;
+            })
+          );
+        });
+      }
 
       setRequests((requests) => {
         index = requests.length;
@@ -60,6 +67,11 @@ function App() {
           {
             ...request,
             responseContent: { content: "", encoding: "" },
+            responseContentPromise: new Promise((resolve) => {
+              request.getContent((content, encoding) =>
+                resolve({ content, encoding })
+              );
+            }),
           },
         ];
       });
@@ -69,7 +81,7 @@ function App() {
     return () => {
       chrome.devtools.network.onRequestFinished.removeListener(onRequestFinish);
     };
-  }, [setRequests, requests, isPaused]);
+  }, [optimisationConfig.showResponseColumn, setRequests, requests, isPaused]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -80,6 +92,8 @@ function App() {
         isPaused={isPaused}
         setIsPaused={setIsPaused}
         setDarkMode={setDarkMode}
+        optimisationConfig={optimisationConfig}
+        setOptimisationConfig={setOptimisationConfig}
       />
     </ThemeProvider>
   );

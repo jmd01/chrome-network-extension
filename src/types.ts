@@ -1,3 +1,17 @@
+export type OptimisationConfig = {
+  dynamicPostDataColumns: boolean;
+  showResponseColumn: boolean;
+  debounceGridRenders: number;
+};
+export type ResponseContentType = {
+  content: string;
+  encoding: string;
+};
+export type NetworkRequest = chrome.devtools.network.Request & {
+  responseContent: ResponseContentType;
+  responseContentPromise: Promise<ResponseContentType>;
+};
+
 export type FilterItem = {
   type: "item";
   id?: string;

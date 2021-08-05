@@ -1,7 +1,11 @@
 import { GridRowData } from "@material-ui/data-grid";
-import { FilterItem, FilterUnion, GroupOperator } from "../types";
+import {
+  FilterItem,
+  FilterUnion,
+  GroupOperator,
+  NetworkRequest,
+} from "../../types";
 import { match } from "ts-pattern";
-import { NetworkRequest } from "../../App";
 
 const getPostDataValues = (
   request: NetworkRequest,
@@ -98,7 +102,6 @@ const evaluateFilter = (row: GridRowData, filterItem: FilterItem): boolean => {
         );
       })
       .with("contains", () => {
-        console.log(row[filterItem.columnField].includes(filterItem.value));
         return row[filterItem.columnField].includes(filterItem.value);
       })
       .with("notContains", () => {
