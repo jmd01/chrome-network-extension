@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { __, match } from "ts-pattern";
 import {
   FilterItem,
@@ -61,7 +61,8 @@ export type GridContainerProps = {
   setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export const GridContainer = ({
+export const GridContainer = memo(function GridContainer({
+  // export const GridContainer = function GridContainer({
   optimisationConfig,
   setOptimisationConfig,
   requests,
@@ -69,11 +70,9 @@ export const GridContainer = ({
   isPaused,
   setIsPaused,
   setDarkMode,
-}: GridContainerProps) => {
+}: GridContainerProps) {
   const [showSettings, setShowSettings] = useState(true);
   const [viewRowId, setViewRowId] = useState<number | string>();
-
-  console.count("GridContainer render");
 
   const staticColumns: GridColDef[] = useStaticColumns(
     setViewRowId,
@@ -152,12 +151,7 @@ export const GridContainer = ({
     } else {
       setColumns(staticColumns);
     }
-  }, [
-    optimisationConfig.dynamicPostDataColumns,
-    staticColumns,
-    columns,
-    postDataCols,
-  ]);
+  }, [optimisationConfig.dynamicPostDataColumns, staticColumns, columns, postDataCols]);
 
   const handleColumnVisibilityChange = useCallback(
     (params: GridColumnVisibilityChangeParams) => {
@@ -239,7 +233,8 @@ export const GridContainer = ({
       />
     </Box>
   );
-};
+  // };
+});
 
 const mapOperatorValueToOperator: Record<string, FilterItem["operator"]> = {
   "=": "eq",

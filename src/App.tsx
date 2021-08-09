@@ -10,10 +10,11 @@ import {
   OptimisationConfig,
   ResponseContentType,
 } from "./types";
+import { useDebounce } from "use-debounce";
 
 function App() {
   const [requests, setRequests] = useState<NetworkRequest[]>([]);
-  // const [responses, setResponses] = useState<ResponseContent[]>([]);
+  const [debouncedRequests] = useDebounce(requests, 2000, { maxWait: 2000 });
   const [isPaused, setIsPaused] = useState(false);
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const [darkMode, setDarkMode] = React.useState(prefersDarkMode);
@@ -87,7 +88,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <GridContainer
-        requests={requests}
+        requests={debouncedRequests}
         setRequests={setRequests}
         isPaused={isPaused}
         setIsPaused={setIsPaused}

@@ -54,7 +54,7 @@ const useStyles = makeStyles((theme: Theme) => {
         lineHeight: "18px!important",
         minHeight: "0!important",
       },
-      "& .MuiDataGrid-root .MuiDataGrid-row.Mui-selected .json-cell .variable-row":
+      "& .MuiDataGrid-root .MuiDataGrid-row.Mui-selected .json-cell .variable-row, .MuiDataGrid-root .MuiDataGrid-row.Mui-selected .json-cell .object-key-val":
         {
           padding: "0px 5px 0px 20px!important",
         },

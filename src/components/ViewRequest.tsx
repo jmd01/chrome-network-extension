@@ -30,7 +30,7 @@ const useStyles = makeStyles((theme: Theme) =>
       width: "100%",
       "& .MuiAccordionDetails-root": {
         flexDirection: "column",
-        padding: "0 16px 4px 16px",
+        padding: "0 8px 4px 8px",
       },
 
       "& .MuiAccordion-root": {
@@ -57,8 +57,19 @@ const useStyles = makeStyles((theme: Theme) =>
       "& .MuiAccordion-root.Mui-expanded": {
         margin: 0,
       },
-      "& .MuiAccordionSummary-content.Mui-expanded": {
+      "& .MuiAccordionSummary-content": {
         margin: 0,
+      },
+      "& .MuiAccordionSummary-root": {
+        padding: "0",
+        paddingLeft: "8px",
+        minHeight: 0,
+      },
+      "& .MuiAccordionSummary-root .MuiIconButton-root": {
+        padding: "0",
+      },
+      "& .MuiAccordionSummary-root .MuiIconButton-edgeEnd": {
+        marginRight: "0",
       },
       "& .MuiAccordionSummary-root.Mui-expanded": {
         minHeight: 0,
@@ -99,9 +110,12 @@ const useStyles = makeStyles((theme: Theme) =>
       "& .react-json-view .object-meta-data .copy-to-clipboard-container": {
         top: "-10px!important",
       },
+      "& .react-json-view .variable-row, .react-json-view .object-key-val": {
+        padding: "0px 5px 0px 10px!important",
+      },
     },
     heading: {
-      fontSize: theme.typography.pxToRem(15),
+      fontSize: theme.typography.pxToRem(12),
       fontWeight: theme.typography.fontWeightRegular,
       color:
         theme.palette.type === "light"
@@ -117,7 +131,7 @@ const useStyles = makeStyles((theme: Theme) =>
           : theme.palette.grey["100"],
     },
     requestDescription: {
-      fontSize: 12,
+      fontSize: 11,
       color:
         theme.palette.type === "light"
           ? theme.palette.grey["700"]
@@ -236,7 +250,7 @@ export const ViewRequest = ({
               </IconButton>
             </Box>
             <Box>
-              <Box padding={"16px"}>
+              <Box padding={"8px"}>
                 <Typography className={classes.heading}>
                   {request.request.url} <code>(ID: {viewRowId})</code>
                 </Typography>
