@@ -249,7 +249,7 @@ export const ViewRequest = ({
                 <ChevronLeft />
               </IconButton>
             </Box>
-            <Box>
+            <Box style={{ minWidth: 0 }}>
               <Box padding={"8px"}>
                 <Typography className={classes.heading}>
                   {request.request.url} <code>(ID: {viewRowId})</code>
