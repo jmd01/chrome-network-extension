@@ -317,6 +317,11 @@ const useStaticColumns = (
         width: 80,
       },
       {
+        field: "time",
+        headerName: "Time",
+        width: 80,
+      },
+      {
         field: "response",
         headerName: "Response",
         width: 400,

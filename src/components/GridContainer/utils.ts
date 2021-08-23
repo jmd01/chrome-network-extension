@@ -6,6 +6,7 @@ import {
   NetworkRequest,
 } from "../../types";
 import { match } from "ts-pattern";
+import prettyMilliseconds from "pretty-ms";
 
 const getPostDataValues = (
   request: NetworkRequest,
@@ -132,6 +133,7 @@ export const mapRequestToGridRow = (
   status: request.response.status,
   type: (request as any)._resourceType,
   size: request.response._transferSize,
+  time: prettyMilliseconds(request.time),
   ...getPostDataValues(request, postDataKeys),
   response: request.responseContent.content
     ? request.responseContent.content.replace(/\\n/g, "")
