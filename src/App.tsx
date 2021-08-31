@@ -16,6 +16,7 @@ function App() {
   const [requests, setRequests] = useState<NetworkRequest[]>([]);
   const [debouncedRequests] = useDebounce(requests, 2000, { maxWait: 2000 });
   const [isPaused, setIsPaused] = useState(false);
+  const [preserveLog, setPreserveLog] = useState(false);
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const [darkMode, setDarkMode] = React.useState(prefersDarkMode);
 
@@ -82,7 +83,23 @@ function App() {
     return () => {
       chrome.devtools.network.onRequestFinished.removeListener(onRequestFinish);
     };
-  }, [optimisationConfig.showResponseColumn, setRequests, requests, isPaused]);
+  }, [
+    optimisationConfig.showResponseColumn,
+    setRequests,
+    requests,
+    isPaused,
+  ]);
+
+  useEffect(() => {
+    function onMessage({ tabId }: { tabId: number }) {
+      if (!preserveLog && tabId === chrome.devtools.inspectedWindow.tabId) {
+        setRequests([]);
+      }
+    }
+
+    chrome.runtime.onMessage.addListener(onMessage);
+    return () => chrome.runtime.onMessage.removeListener(onMessage);
+  }, [preserveLog]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -92,6 +109,8 @@ function App() {
         setRequests={setRequests}
         isPaused={isPaused}
         setIsPaused={setIsPaused}
+        preserveLog={preserveLog}
+        setPreserveLog={setPreserveLog}
         setDarkMode={setDarkMode}
         optimisationConfig={optimisationConfig}
         setOptimisationConfig={setOptimisationConfig}

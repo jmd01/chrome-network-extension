@@ -58,6 +58,8 @@ export type GridContainerProps = {
   setRequests: (value: NetworkRequest[]) => void;
   isPaused: boolean;
   setIsPaused: (value: boolean) => void;
+  preserveLog: boolean;
+  setPreserveLog: (value: boolean) => void;
   setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
@@ -69,6 +71,8 @@ export const GridContainer = memo(function GridContainer({
   setRequests,
   isPaused,
   setIsPaused,
+  preserveLog,
+  setPreserveLog,
   setDarkMode,
 }: GridContainerProps) {
   const [showSettings, setShowSettings] = useState(true);
@@ -210,6 +214,8 @@ export const GridContainer = memo(function GridContainer({
         setFilters={setFilters}
         isPaused={isPaused}
         setIsPaused={setIsPaused}
+        preserveLog={preserveLog}
+        setPreserveLog={setPreserveLog}
         setRequests={setRequests}
         setDarkMode={setDarkMode}
         setShowSettings={setShowSettings}

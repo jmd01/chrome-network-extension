@@ -1,5 +1,6 @@
 import {
   Box,
+  Checkbox,
   FormControlLabel,
   IconButton,
   Switch,
@@ -29,6 +30,16 @@ const useStyles = makeStyles({
       fontSize: "0.75rem",
       lineHeight: "1.53",
     },
+    "& .MuiFormControlLabel-root": {
+      marginLeft: 0,
+      marginRight: "6px",
+    },
+    "& .MuiCheckbox-root": {
+      padding: "3px",
+    },
+    "& .MuiFormControlLabel-label": {
+      fontSize: "0.8rem",
+    },
   },
 });
 
@@ -38,6 +49,8 @@ type ToolbarProps = {
   setRequests: (value: NetworkRequest[]) => void;
   isPaused: boolean;
   setIsPaused: (value: boolean) => void;
+  preserveLog: boolean;
+  setPreserveLog: (value: boolean) => void;
   setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
   setShowSettings: React.Dispatch<React.SetStateAction<boolean>>;
   optimisationConfig: OptimisationConfig;
@@ -47,6 +60,8 @@ export const Toolbar = ({
   setRequests,
   isPaused,
   setIsPaused,
+  preserveLog,
+  setPreserveLog,
   filters,
   setFilters,
   setDarkMode,
@@ -75,6 +90,7 @@ export const Toolbar = ({
             aria-label="settings"
             size={"small"}
             onClick={() => setShowSettings((settings) => !settings)}
+            title={"Show grid settings"}
           >
             <SettingsIcon />
           </IconButton>
@@ -90,6 +106,7 @@ export const Toolbar = ({
             size={"small"}
             color={"secondary"}
             onClick={() => setRequests([])}
+            title={"Clear log"}
           >
             <NotInterestedIcon />
           </IconButton>
@@ -98,9 +115,23 @@ export const Toolbar = ({
             size={"small"}
             color={isPaused ? "primary" : undefined}
             onClick={() => setIsPaused(!isPaused)}
+            title={"Pause logging"}
           >
             <PauseIcon />
           </IconButton>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={preserveLog}
+                onChange={() => setPreserveLog(!preserveLog)}
+                name="Preserve log"
+                color="primary"
+                size={"small"}
+              />
+            }
+            label="Preserve log"
+            title="Preserve log between page reloads"
+          />
         </Box>
         <Filter filters={filters} setFilters={setFilters} />
         <OptimisationSettings
@@ -112,7 +143,6 @@ export const Toolbar = ({
         control={
           <Switch
             checked={theme.palette.type === "dark"}
-            onChange={handleChange}
             name="dark"
             color="primary"
             size={"small"}
@@ -123,6 +153,8 @@ export const Toolbar = ({
             <Brightness6Icon />
           </IconButton>
         }
+        title="Dark mode"
+        onClick={handleChange}
       />
     </Box>
   );
@@ -153,6 +185,7 @@ const OptimisationSettings = ({
         size={"small"}
         color={"primary"}
         onClick={handleClick}
+        title="Optimisation settings"
       >
         <TuneIcon />
       </IconButton>

@@ -8,5 +8,9 @@
     "48": "network+_48x48.png",
     "128": "network+_128x128.png"
   },
-  "devtools_page": "devtools.html"
+  "devtools_page": "devtools.html",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["tabs"]
 }
