@@ -83,12 +83,7 @@ function App() {
     return () => {
       chrome.devtools.network.onRequestFinished.removeListener(onRequestFinish);
     };
-  }, [
-    optimisationConfig.showResponseColumn,
-    setRequests,
-    requests,
-    isPaused,
-  ]);
+  }, [optimisationConfig.showResponseColumn, setRequests, requests, isPaused]);
 
   useEffect(() => {
     function onMessage({ tabId }: { tabId: number }) {
