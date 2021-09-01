@@ -13,7 +13,7 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import Brightness6Icon from "@material-ui/icons/Brightness6";
 import React from "react";
 import { Filter } from "./Filter";
-import { FilterUnion, NetworkRequest, OptimisationConfig } from "../types";
+import { FilterUnion, OptimisationConfig } from "../types";
 import { makeStyles } from "@material-ui/styles";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -46,7 +46,7 @@ const useStyles = makeStyles({
 type ToolbarProps = {
   filters: FilterUnion[];
   setFilters: (value: FilterUnion[]) => void;
-  setRequests: (value: NetworkRequest[]) => void;
+  clearLog: () => void;
   isPaused: boolean;
   setIsPaused: (value: boolean) => void;
   preserveLog: boolean;
@@ -56,8 +56,8 @@ type ToolbarProps = {
   optimisationConfig: OptimisationConfig;
   setOptimisationConfig: (value: OptimisationConfig) => void;
 };
-export const Toolbar = ({
-  setRequests,
+export const Toolbar = React.memo(function Toolbar({
+  clearLog,
   isPaused,
   setIsPaused,
   preserveLog,
@@ -68,11 +68,13 @@ export const Toolbar = ({
   setShowSettings,
   optimisationConfig,
   setOptimisationConfig,
-}: ToolbarProps) => {
+}: ToolbarProps) {
   const theme = useTheme();
   const handleChange = () => {
     setDarkMode((darkMode) => !darkMode);
   };
+
+  console.count("Toolbar");
 
   const classes = useStyles();
 
@@ -105,7 +107,7 @@ export const Toolbar = ({
             aria-label="clear"
             size={"small"}
             color={"secondary"}
-            onClick={() => setRequests([])}
+            onClick={clearLog}
             title={"Clear log"}
           >
             <NotInterestedIcon />
@@ -158,7 +160,7 @@ export const Toolbar = ({
       />
     </Box>
   );
-};
+});
 
 type OptimisationSettingsProps = {
   optimisationConfig: OptimisationConfig;

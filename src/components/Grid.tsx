@@ -114,14 +114,16 @@ export type GridProps = {
   showSettings: boolean;
 };
 
-export const Grid = ({
+export const Grid = React.memo(function Grid({
   rows,
   columns,
   handleColumnVisibilityChange,
   handleFilterModelChange,
   showSettings,
   setViewRowId,
-}: GridProps) => {
+}: GridProps) {
+  console.count("Grid");
+
   const classes = useStyles();
   return (
     <div className={classes.root}>
@@ -146,4 +148,4 @@ export const Grid = ({
       />
     </div>
   );
-};
+});

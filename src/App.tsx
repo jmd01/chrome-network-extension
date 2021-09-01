@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { GridContainer } from "./components/GridContainer/GridContainer";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
@@ -14,7 +14,10 @@ import { useDebounce } from "use-debounce";
 
 function App() {
   const [requests, setRequests] = useState<NetworkRequest[]>([]);
-  const [debouncedRequests] = useDebounce(requests, 2000, { maxWait: 2000 });
+  const [debouncedRequests, controlFns] = useDebounce(requests, 2000, {
+    maxWait: 2000,
+  });
+
   const [isPaused, setIsPaused] = useState(false);
   const [preserveLog, setPreserveLog] = useState(false);
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
@@ -26,6 +29,8 @@ function App() {
       showResponseColumn: true,
       debounceGridRenders: 2,
     });
+
+  console.count("App");
 
   const theme: Theme = useTheme(darkMode);
 
@@ -85,23 +90,35 @@ function App() {
     };
   }, [optimisationConfig.showResponseColumn, setRequests, requests, isPaused]);
 
+  const clearLog = useCallback(
+    () => {
+      setRequests([]);
+      controlFns.flush();
+    },
+    // controlFns is not referentially equal
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [setRequests]
+  );
+
   useEffect(() => {
     function onMessage({ tabId }: { tabId: number }) {
       if (!preserveLog && tabId === chrome.devtools.inspectedWindow.tabId) {
-        setRequests([]);
+        // persist log part working, need to find correct event for refresh
+        clearLog();
       }
     }
 
     chrome.runtime.onMessage.addListener(onMessage);
     return () => chrome.runtime.onMessage.removeListener(onMessage);
-  }, [preserveLog]);
+  }, [preserveLog, clearLog]);
 
+  console.log(debouncedRequests);
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <GridContainer
         requests={debouncedRequests}
-        setRequests={setRequests}
+        clearLog={clearLog}
         isPaused={isPaused}
         setIsPaused={setIsPaused}
         preserveLog={preserveLog}

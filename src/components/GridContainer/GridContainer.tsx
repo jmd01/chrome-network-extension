@@ -55,7 +55,7 @@ export type GridContainerProps = {
   optimisationConfig: OptimisationConfig;
   setOptimisationConfig: (value: OptimisationConfig) => void;
   requests: NetworkRequest[];
-  setRequests: (value: NetworkRequest[]) => void;
+  clearLog: () => void;
   isPaused: boolean;
   setIsPaused: (value: boolean) => void;
   preserveLog: boolean;
@@ -64,17 +64,18 @@ export type GridContainerProps = {
 };
 
 export const GridContainer = memo(function GridContainer({
-  // export const GridContainer = function GridContainer({
   optimisationConfig,
   setOptimisationConfig,
   requests,
-  setRequests,
+  clearLog,
   isPaused,
   setIsPaused,
   preserveLog,
   setPreserveLog,
   setDarkMode,
 }: GridContainerProps) {
+  console.count("GridContainer");
+
   const [showSettings, setShowSettings] = useState(true);
   const [viewRowId, setViewRowId] = useState<number | string>();
 
@@ -155,7 +156,12 @@ export const GridContainer = memo(function GridContainer({
     } else {
       setColumns(staticColumns);
     }
-  }, [optimisationConfig.dynamicPostDataColumns, staticColumns, columns, postDataCols]);
+  }, [
+    optimisationConfig.dynamicPostDataColumns,
+    staticColumns,
+    columns,
+    postDataCols,
+  ]);
 
   const handleColumnVisibilityChange = useCallback(
     (params: GridColumnVisibilityChangeParams) => {
@@ -216,7 +222,7 @@ export const GridContainer = memo(function GridContainer({
         setIsPaused={setIsPaused}
         preserveLog={preserveLog}
         setPreserveLog={setPreserveLog}
-        setRequests={setRequests}
+        clearLog={clearLog}
         setDarkMode={setDarkMode}
         setShowSettings={setShowSettings}
         optimisationConfig={optimisationConfig}
@@ -230,16 +236,17 @@ export const GridContainer = memo(function GridContainer({
         showSettings={showSettings}
         setViewRowId={setViewRowId}
       />
-      <ViewRequest
-        requests={requests}
-        filteredRows={filteredRows}
-        viewRowId={viewRowId}
-        setViewRowId={setViewRowId}
-        optimisationConfig={optimisationConfig}
-      />
+      {viewRowId && (
+        <ViewRequest
+          requests={requests}
+          filteredRows={filteredRows}
+          viewRowId={viewRowId}
+          setViewRowId={setViewRowId}
+          optimisationConfig={optimisationConfig}
+        />
+      )}
     </Box>
   );
-  // };
 });
 
 const mapOperatorValueToOperator: Record<string, FilterItem["operator"]> = {

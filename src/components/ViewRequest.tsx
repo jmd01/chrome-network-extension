@@ -157,6 +157,8 @@ export const ViewRequest = ({
   viewRowId,
   setViewRowId,
 }: ViewRequestProps) => {
+  console.count("ViewRequest");
+
   const [responseContent, setResponseContent] = useState<ResponseContentType>();
 
   const request = useMemo(() => {
