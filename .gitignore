@@ -12,3 +12,5 @@ test-report.xml
 *.tsbuildinfo
 
 public/*.js
+
+yarn-error.log

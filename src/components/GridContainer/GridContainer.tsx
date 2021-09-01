@@ -18,9 +18,9 @@ import { getFilteredRows, mapRequestToGridRow } from "./utils";
 import {
   GridCellParams,
   GridColDef,
-  GridFilterModelParams,
+  GridFilterModel,
   GridRowData,
-} from "@material-ui/data-grid";
+} from "@mui/x-data-grid";
 import { GridCellExpand } from "./GridCellExpand";
 import { ReactJsonView } from "../ReactJsonView";
 
@@ -174,37 +174,34 @@ export const GridContainer = memo(function GridContainer({
     [setColumns, columns]
   );
 
-  const handleFilterModelChange = useCallback(
-    (params: GridFilterModelParams) => {
-      setFilters((filters) => {
-        const filterModelFilters = params.filterModel.items
-          .map(({ id, columnField, operatorValue, value }) => {
-            if (columnField && operatorValue && value && id) {
-              return {
-                type: "item" as const,
-                id: id.toString(),
-                columnField,
-                operator: mapOperatorValueToOperator[operatorValue],
-                value,
-              };
-            }
-          })
-          .filter(notEmpty);
+  const handleFilterModelChange = useCallback((model: GridFilterModel) => {
+    setFilters((filters) => {
+      const filterModelFilters = model.items
+        .map(({ id, columnField, operatorValue, value }) => {
+          if (columnField && operatorValue && value && id) {
+            return {
+              type: "item" as const,
+              id: id.toString(),
+              columnField,
+              operator: mapOperatorValueToOperator[operatorValue],
+              value,
+            };
+          }
+        })
+        .filter(notEmpty);
 
-        const quickFilters = filters.find(({ id }) => id === "quick");
-        return [
-          ...(quickFilters ? [quickFilters] : []),
-          {
-            id: "dataGrid", // Filters set from DataGrid filter panel
-            type: "group",
-            operator: "AND",
-            filterItems: filterModelFilters,
-          },
-        ];
-      });
-    },
-    []
-  );
+      const quickFilters = filters.find(({ id }) => id === "quick");
+      return [
+        ...(quickFilters ? [quickFilters] : []),
+        {
+          id: "dataGrid", // Filters set from DataGrid filter panel
+          type: "group",
+          operator: "AND",
+          filterItems: filterModelFilters,
+        },
+      ];
+    });
+  }, []);
 
   return (
     <Box

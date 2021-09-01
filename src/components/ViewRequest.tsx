@@ -16,7 +16,7 @@ import AccordionDetails from "@material-ui/core/AccordionDetails";
 import Typography from "@material-ui/core/Typography";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import { ChevronLeft, ChevronRight } from "@material-ui/icons";
-import { GridRowData } from "@material-ui/data-grid";
+import { GridRowData } from "@mui/x-data-grid";
 import { ReactJsonView } from "./ReactJsonView";
 import {
   NetworkRequest,

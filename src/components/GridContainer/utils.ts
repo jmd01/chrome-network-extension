@@ -1,4 +1,4 @@
-import { GridRowData } from "@material-ui/data-grid";
+import { GridRowData } from "@mui/x-data-grid";
 import {
   FilterItem,
   FilterUnion,

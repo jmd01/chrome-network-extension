@@ -1,12 +1,11 @@
 import React from "react";
-import { isOverflown } from "@material-ui/data-grid";
 import Popper from "@material-ui/core/Popper";
 import Paper from "@material-ui/core/Paper";
 import { createStyles, makeStyles } from "@material-ui/styles";
 
 interface GridCellExpandProps {
   value: string;
-  width: number;
+  width?: number;
   jsonCell: string | number | JSX.Element;
 }
 
@@ -121,3 +120,10 @@ export const GridCellExpand = function GridCellExpand(
     </div>
   );
 };
+
+function isOverflown(element: HTMLDivElement) {
+  return (
+    element.scrollHeight > element.clientHeight ||
+    element.scrollWidth > element.clientWidth
+  );
+}
