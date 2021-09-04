@@ -13,6 +13,7 @@ import {
 import { useDebounce } from "use-debounce";
 
 function App() {
+  const [previousUrl, setPreviousUrl] = useState<string>();
   const [requests, setRequests] = useState<NetworkRequest[]>([]);
   const [debouncedRequests, controlFns] = useDebounce(requests, 2000, {
     maxWait: 2000,
@@ -30,7 +31,7 @@ function App() {
       debounceGridRenders: 2,
     });
 
-  console.count("App");
+  // console.count("App");
 
   const theme: Theme = useTheme(darkMode);
 
@@ -101,18 +102,41 @@ function App() {
   );
 
   useEffect(() => {
-    function onMessage({ tabId }: { tabId: number }) {
+    function onMessage({
+      tabId,
+      changeInfoUrl,
+    }: {
+      tabId: number;
+      changeInfoUrl: string | undefined;
+    }) {
       if (!preserveLog && tabId === chrome.devtools.inspectedWindow.tabId) {
-        // persist log part working, need to find correct event for refresh
-        clearLog();
+        if (!changeInfoUrl) {
+          clearLog();
+        }
+
+        if (changeInfoUrl && previousUrl) {
+          try {
+            const previousUrlObj = new URL(previousUrl);
+            const changeInfoUrlObj = new URL(changeInfoUrl);
+            if (
+              previousUrlObj.host + previousUrlObj.pathname !==
+              changeInfoUrlObj.host + changeInfoUrlObj.pathname
+            ) {
+              clearLog();
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        setPreviousUrl(changeInfoUrl);
       }
     }
 
     chrome.runtime.onMessage.addListener(onMessage);
     return () => chrome.runtime.onMessage.removeListener(onMessage);
-  }, [preserveLog, clearLog]);
+  }, [preserveLog, clearLog, previousUrl]);
 
-  console.log(debouncedRequests);
+  // console.log(debouncedRequests);
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

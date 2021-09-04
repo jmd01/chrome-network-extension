@@ -74,7 +74,7 @@ export const Toolbar = React.memo(function Toolbar({
     setDarkMode((darkMode) => !darkMode);
   };
 
-  console.count("Toolbar");
+  // console.count("Toolbar");
 
   const classes = useStyles();
 

@@ -74,7 +74,7 @@ export const GridContainer = memo(function GridContainer({
   setPreserveLog,
   setDarkMode,
 }: GridContainerProps) {
-  console.count("GridContainer");
+  // console.count("GridContainer");
 
   const [showSettings, setShowSettings] = useState(true);
   const [viewRowId, setViewRowId] = useState<number | string>();

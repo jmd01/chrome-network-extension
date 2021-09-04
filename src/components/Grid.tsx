@@ -122,7 +122,7 @@ export const Grid = React.memo(function Grid({
   showSettings,
   setViewRowId,
 }: GridProps) {
-  console.count("Grid");
+  // console.count("Grid");
 
   const classes = useStyles();
   return (
